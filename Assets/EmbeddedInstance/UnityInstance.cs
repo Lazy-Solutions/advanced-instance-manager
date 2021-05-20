@@ -24,17 +24,20 @@ namespace EmbeddedInstance
 
         [SerializeField] private string m_ID;
         [SerializeField] private string m_path;
-        [SerializeField] private int m_windowHandle;
         [SerializeField] private int m_processID;
+        [SerializeField] private string m_preferredLayout;
 
         public string ID => m_ID;
         public string path => m_path;
-        public IntPtr windowHandle => (IntPtr)m_windowHandle;
         public bool isSettingUp { get; internal set; }
 
         public Process InstanceProcess { get; private set; }
 
-        public UnityInstancePipe pipe { get; internal set; }
+        public string preferredLayout
+        {
+            get => m_preferredLayout;
+            set => m_preferredLayout = value;
+        }
 
         #region ISerializationCallbackReceiver
 
@@ -78,6 +81,7 @@ namespace EmbeddedInstance
             }
         }
 
+
         /// <summary>Toggle open. Closes if already open, otherwise opens in default mode, as defined in settings.</summary>
         public void ToggleOpen()
         {
@@ -90,25 +94,15 @@ namespace EmbeddedInstance
         /// <summary>Open default mode, as defined in settings.</summary>
         public void Open()
         {
-            //TODO: After settings added, add support for switching open mode here
-            OpenAsEditor();
-        }
 
-        /// <summary>Open as editor, like a regular unity window.</summary>
-        public void OpenAsEditor() =>
-            Run(gameView: false);
+            InstanceProcess = Process.Start(
+                fileName: EditorApplication.applicationPath,
+                arguments: SecondaryInstanceManager.projectParamName + path +
+                           SecondaryInstanceManager.idParamName + ID +
+                           SecondaryInstanceManager.layoutParamName + preferredLayout);
 
-        /// <summary>Open as game view, displaying only game window.</summary>
-        public void OpenAsGameView() =>
-            Run(gameView: true);
-
-        void Run(bool gameView)
-        {
-
-            InstanceProcess = Process.Start(EditorApplication.applicationPath, "-projectPath " + path + " -instanceID:" + ID + (gameView ? " -gameView" : ""));
             InstanceProcess.EnableRaisingEvents = true;
             InstanceProcess.Exited += InstanceProcess_Exited;
-            //pipe = UnityInstancePipe.Server(ID, Close);
             InstanceManager.Save();
 
         }
@@ -126,11 +120,6 @@ namespace EmbeddedInstance
             if (!InstanceProcess?.HasExited ?? false)
                 InstanceProcess?.Kill();
             InstanceProcess = null;
-
-            m_windowHandle = 0;
-
-            pipe?.Dispose();
-            pipe = null;
 
             RemoveUnityHubEntry();
 

@@ -11,11 +11,11 @@ namespace EmbeddedInstance
     public static class SecondaryInstanceManager
     {
 
-        const string idParamName = "-instanceID:";
-        const string layoutParamName = "-layout:";
+        public const string projectParamName = "-projectPath ";
+        public const string idParamName = "-instanceID:";
+        public const string layoutParamName = "-layout:";
 
         public static event Action onSecondInstanceStarted;
-        //public static UnityInstance instance { get; private set; }
         public static bool isSecondInstance { get; } = Environment.GetCommandLineArgs().Any(a => a.StartsWith(idParamName));
 
         public static string id { get; private set; }
@@ -28,21 +28,17 @@ namespace EmbeddedInstance
             id = Environment.GetCommandLineArgs().FirstOrDefault(a => a.StartsWith(idParamName))?.Replace(idParamName, "");
             if (id is null)
                 return;
-
+            UnityEngine.Debug.Log(id);
             var layout = Environment.GetCommandLineArgs().FirstOrDefault(a => a.StartsWith(layoutParamName))?.Replace(layoutParamName, "");
             if (layout != null)
                 preferredLayout = layout;
 
             AssetDatabase.DisallowAutoRefresh();
-            //instance = new UnityInstance(id, Directory.GetParent(Application.dataPath).FullName)
-            //{
-
-            //};
 
             await Task.Delay(100);
             onSecondInstanceStarted?.Invoke();
 
-            WindowUtility.Initialize();
+            await WindowUtility.Initialize();
 
         }
 

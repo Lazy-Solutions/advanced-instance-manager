@@ -10,6 +10,9 @@ namespace EmbeddedInstance
 {
 
     //TODO: Redirect output from process
+    //TODO: Allow set scene(s) to auto open
+    //TODO: Scenes do not reload on sync with main project
+    //TODO: Autosync by default and automatically sync when main project is changed, without needing unity window to be focused
 
     public class InstanceManagerWindow : EditorWindow
     {
@@ -163,10 +166,7 @@ namespace EmbeddedInstance
                 if (instance.isRunning)
                     menu.AddItem(new GUIContent("Close"), false, () => instance.Close());
                 else
-                {
-                    menu.AddItem(new GUIContent("Open as editor window"), false, () => instance.OpenAsEditor());
-                    menu.AddItem(new GUIContent("Open as game window"), false, () => instance.OpenAsGameView());
-                }
+                    menu.AddItem(new GUIContent("Open"), false, () => instance.Open());
 
                 menu.AddSeparator("");
                 menu.AddItem(new GUIContent("Open in explorer"), false, () => Process.Start("explorer", instance.path));
