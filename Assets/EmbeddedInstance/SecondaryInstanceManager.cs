@@ -25,6 +25,8 @@ namespace EmbeddedInstance
         static async void OnLoad()
         {
 
+            await WindowUtility.Initialize();
+
             id = Environment.GetCommandLineArgs().FirstOrDefault(a => a.StartsWith(idParamName))?.Replace(idParamName, "");
             if (id is null)
                 return;
@@ -38,7 +40,6 @@ namespace EmbeddedInstance
             await Task.Delay(100);
             onSecondInstanceStarted?.Invoke();
 
-            await WindowUtility.Initialize();
 
         }
 

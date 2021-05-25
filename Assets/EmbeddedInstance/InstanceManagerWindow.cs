@@ -13,6 +13,8 @@ namespace EmbeddedInstance
     //TODO: Allow set scene(s) to auto open
     //TODO: Scenes do not reload on sync with main project
     //TODO: Autosync by default and automatically sync when main project is changed, without needing unity window to be focused
+    //TODO: Find some way to intercept visual studio open, and open main window instance
+    //TODO: Prefix id to more easily identify them in unity hub
 
     public class InstanceManagerWindow : EditorWindow
     {
