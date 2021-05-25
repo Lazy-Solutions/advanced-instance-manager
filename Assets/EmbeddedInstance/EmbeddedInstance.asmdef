@@ -1,5 +1,5 @@
 {
-    "name": "EmbeddedInstance",
+    "name": "InstanceManager",
     "rootNamespace": "",
     "references": [],
     "includePlatforms": [

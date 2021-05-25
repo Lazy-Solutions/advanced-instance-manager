@@ -9,6 +9,11 @@ using UnityEngine;
 namespace EmbeddedInstance
 {
 
+    //TODO: Something is wrong which causes local multiplayer to not assign correct ids to each instance
+
+    //TODO: Check out: https://github.com/VeriorPies/ParrelSync/tree/95a062cb14e669c7834094366611765d3a9658d6
+    //TODO: Add /j to symlinker
+
     //TODO: Redirect output from process
     //TODO: Allow set scene(s) to auto open
     //TODO: Scenes do not reload on sync with main project
