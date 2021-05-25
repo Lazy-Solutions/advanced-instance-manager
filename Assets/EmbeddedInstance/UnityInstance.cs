@@ -97,10 +97,9 @@ namespace EmbeddedInstance
 
             InstanceProcess = Process.Start(new ProcessStartInfo(
                 fileName: EditorApplication.applicationPath,
-                arguments: SecondaryInstanceManager.projectParamName + path + " " +
+                arguments: SecondaryInstanceManager.projectParamName + path.WithQuotes() + " " +
                            SecondaryInstanceManager.idParamName + ID + " " +
-                           SecondaryInstanceManager.layoutParamName + preferredLayout)
-            { CreateNoWindow = true });
+                           SecondaryInstanceManager.layoutParamName + preferredLayout);
 
             InstanceProcess.EnableRaisingEvents = true;
             InstanceProcess.Exited += InstanceProcess_Exited;

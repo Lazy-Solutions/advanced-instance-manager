@@ -108,8 +108,8 @@ namespace EmbeddedInstance
         {
             EditorGUILayout.LabelField("ID: " + SecondaryInstanceManager.id);
             EditorGUILayout.LabelField("Preferred layout: ", SecondaryInstanceManager.preferredLayout);
-            EditorGUILayout.LinkButton("Set current as preferred");
-            if (EditorGUILayout.LinkButton("Sync with main project"))
+            GUILayout.Button("Set current as preferred");
+            if (GUILayout.Button("Sync with main project"))
                 AssetDatabase.Refresh();
             EditorGUILayout.ToggleLeft("Auto sync", false);
         }

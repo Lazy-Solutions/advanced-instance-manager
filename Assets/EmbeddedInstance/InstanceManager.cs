@@ -120,7 +120,7 @@ namespace EmbeddedInstance
                 isSettingUp = true
             };
 
-            SymLink("Creating new instance", projectPath, path,
+            SymLink("Creating new instance", projectPath.WithQuotes(), path.WithQuotes(),
                 onComplete: () =>
                 {
                     instance.isSettingUp = false;
@@ -129,6 +129,16 @@ namespace EmbeddedInstance
 
             return instances.Add(instance);
 
+        }
+
+        public static string WithQuotes(this string s)
+        {
+            var q = @"""";
+            if (!s.StartsWith(q))
+                s = q + s;
+            if (!s.EndsWith(q))
+                s += q;
+            return s;
         }
 
         static string GenerateID(Func<string, bool> validate = null)
