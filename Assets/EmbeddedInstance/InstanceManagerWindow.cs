@@ -1,30 +1,28 @@
-﻿#pragma warning disable IDE1006 // Naming Styles
-
+﻿using InstanceManager.Models;
+using InstanceManager.Utility;
 using System;
 using System.Diagnostics;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
+using Debug = UnityEngine.Debug;
 
-namespace EmbeddedInstance
+namespace InstanceManager._Editor
 {
-
-    //TODO: Something is wrong which causes local multiplayer to not assign correct ids to each instance
-
-    //TODO: Check out: https://github.com/VeriorPies/ParrelSync/tree/95a062cb14e669c7834094366611765d3a9658d6
-    //TODO: Add /j to symlinker
-
-    //TODO: Redirect output from process
-    //TODO: Allow set scene(s) to auto open
-    //TODO: Scenes do not reload on sync with main project
-    //TODO: Autosync by default and automatically sync when main project is changed, without needing unity window to be focused
-    //TODO: Find some way to intercept visual studio open, and open main window instance
-    //TODO: Prefix id to more easily identify them in unity hub
 
     public class InstanceManagerWindow : EditorWindow
     {
 
-        [MenuItem("Tools/Instance Manager")]
+        //TODO: Something is wrong which causes local multiplayer to not assign correct ids to each instance
+
+        //TODO: Check out: https://github.com/VeriorPies/ParrelSync/tree/95a062cb14e669c7834094366611765d3a9658d6
+        //TODO: Add /j to symlinker
+
+        //TODO: Allow set scene(s) to auto open
+        //TODO: Scenes do not reload on sync with main project
+        //TODO: Autosync by default and automatically sync when main project is changed, without needing unity window to be focused
+
+        [MenuItem("Tools/Lazy/Instance Manager")]
         public static void Open()
         {
             var w = GetWindow<InstanceManagerWindow>();
@@ -51,37 +49,72 @@ namespace EmbeddedInstance
 
         }
 
+        string[] layouts;
         internal static InstanceManagerWindow window;
-        private void OnEnable()
+        void OnEnable()
         {
+
+            layouts = WindowLayoutUtility.availableLayouts.Select(l => l.name).ToArray();
             window = this;
-            if (!SecondaryInstanceManager.isSecondInstance)
-                InstanceManager.Reload();
+
+            InstanceManager.instances.Reload();
+
+            if (InstanceManager.isSecondInstance)
+                SetInstance(InstanceManager.id);
+
         }
 
-        private void OnDisable()
+        void OnDisable()
         {
             window = null;
         }
 
-        private void OnFocus()
+        void OnFocus()
         {
+            InstanceManager.instances.Reload();
         }
 
         Vector2 scrollPos;
-        private void OnGUI()
+        void OnGUI()
         {
+
+            UnfocusOnClick();
 
             minSize = new Vector2(450, 350);
 
             Style.Initialize();
 
-            if (!SecondaryInstanceManager.isSecondInstance)
+            if (instance is null)
                 PrimaryInstance_OnGUI();
             else
                 SecondaryInstance_OnGUI();
 
         }
+
+
+        [NonSerialized] UnityInstance instance;
+
+        void ClearInstance() =>
+            SetInstance(null);
+
+        void SetInstance(string id)
+        {
+            Debug.Log("Instance set: " + id);
+            instance = !string.IsNullOrEmpty(id)
+            ? InstanceManager.instances.Find(id)
+            : null;
+        }
+
+        void UnfocusOnClick()
+        {
+            if (Event.current.type == EventType.MouseDown)
+            {
+                GUI.FocusControl(null);
+                Repaint();
+            }
+        }
+
+        #region Primary instance
 
         void PrimaryInstance_OnGUI()
         {
@@ -93,7 +126,7 @@ namespace EmbeddedInstance
 
             DrawHeader();
 
-            DrawInstanceRow("ID:", "Status:                               ");
+            DrawInstanceRow("ID:", "Status:                     ");
 
             scrollPos = EditorGUILayout.BeginScrollView(scrollPos);
             foreach (var instance in InstanceManager.instances.OfType<UnityInstance>().ToArray())
@@ -109,32 +142,18 @@ namespace EmbeddedInstance
 
         }
 
-        void SecondaryInstance_OnGUI()
-        {
-            EditorGUILayout.LabelField("ID: " + SecondaryInstanceManager.id);
-            EditorGUILayout.LabelField("Preferred layout: ", SecondaryInstanceManager.preferredLayout);
-            GUILayout.Button("Set current as preferred");
-            if (GUILayout.Button("Sync with main project"))
-                AssetDatabase.Refresh();
-            EditorGUILayout.ToggleLeft("Auto sync", false);
-        }
-
         void DrawInstanceRow(UnityInstance instance) =>
             DrawInstanceRow(
                 id: instance.ID,
                 status: instance.isRunning ? "Running" : "Not running",
                 openButtonValue: instance.isRunning,
-                removeButton: () => Remove(instance),
                 isEnabled: !instance.isSettingUp,
                 instance);
 
-        void Remove(UnityInstance instance)
-        {
-            InstanceManager.Delete(instance, Repaint);
-            GUIUtility.ExitGUI();
-        }
+        void Remove(UnityInstance instance) =>
+            InstanceManager.instances.Remove(instance, Repaint);
 
-        void DrawInstanceRow(string id, string status, bool? openButtonValue = null, Action removeButton = null, bool isEnabled = true, UnityInstance instance = null)
+        void DrawInstanceRow(string id, string status, bool? openButtonValue = null, bool isEnabled = true, UnityInstance instance = null)
         {
 
             GUI.enabled = isEnabled;
@@ -147,9 +166,6 @@ namespace EmbeddedInstance
                 GUILayout.Label("", GUILayout.ExpandWidth(false));
             else if (GUILayout.Button(instance.isRunning ? "Close" : "Open", GUILayout.ExpandWidth(false)))
                 instance.ToggleOpen();
-
-            if (removeButton != null && GUILayout.Button("x", Style.removeButton, GUILayout.ExpandWidth(false)))
-                removeButton.Invoke();
 
             EditorGUILayout.EndHorizontal();
             if (instance != null)
@@ -176,7 +192,8 @@ namespace EmbeddedInstance
                     menu.AddItem(new GUIContent("Open"), false, () => instance.Open());
 
                 menu.AddSeparator("");
-                menu.AddItem(new GUIContent("Open in explorer"), false, () => Process.Start("explorer", instance.path));
+                menu.AddItem(new GUIContent("Open in explorer..."), false, () => Process.Start("explorer", instance.path));
+                menu.AddItem(new GUIContent("Options..."), false, () => SetInstance(instance.ID));
                 menu.AddSeparator("");
                 menu.AddItem(new GUIContent("Delete"), false, () => Remove(instance));
                 menu.ShowAsContext();
@@ -213,7 +230,7 @@ namespace EmbeddedInstance
             if (GUILayout.Button("Create new instance", Style.createButton))
             {
 
-                InstanceManager.Create(onComplete: () =>
+                InstanceManager.instances.Create(onComplete: () =>
                 {
                     EditorApplication.delayCall += Repaint;
                     EditorApplication.QueuePlayerLoopUpdate();
@@ -226,6 +243,56 @@ namespace EmbeddedInstance
             EditorGUILayout.EndHorizontal();
 
         }
+
+        #endregion
+        #region Secondary instance
+
+        void SecondaryInstance_OnGUI()
+        {
+
+            EditorGUILayout.BeginVertical(new GUIStyle() { margin = new RectOffset(6, 6, 6, 6) });
+
+            GUILayout.BeginHorizontal();
+
+            if (!InstanceManager.isSecondInstance && GUILayout.Button("←"))
+            {
+                ClearInstance();
+                GUIUtility.ExitGUI();
+            }
+
+            EditorGUILayout.LabelField(" ID: " + instance.ID);
+
+            GUILayout.FlexibleSpace();
+
+            EditorGUI.BeginChangeCheck();
+
+            var c = new GUIContent("Auto sync:");
+            var size = GUI.skin.label.CalcSize(c);
+
+            EditorGUILayout.LabelField(c, GUILayout.Width(size.x));
+            instance.autoSync = EditorGUILayout.ToggleLeft("", instance.autoSync, GUILayout.Width(16));
+
+            if (InstanceManager.isSecondInstance &&
+                GUILayout.Button(new GUIContent("↻", "Sync with primary instance"), GUILayout.ExpandWidth(false)))
+                AssetDatabase.Refresh();
+
+            GUILayout.EndHorizontal();
+
+            EditorGUILayout.BeginVertical(new GUIStyle() { margin = new RectOffset(0, 0, 12, 0) });
+
+            var i = Array.IndexOf(layouts, instance.preferredLayout ?? "Default");
+            if (i == -1) i = 0;
+            instance.preferredLayout = layouts[EditorGUILayout.Popup("Preferred layout:", i, layouts)];
+
+            EditorGUILayout.EndVertical();
+            EditorGUILayout.EndVertical();
+
+            if (EditorGUI.EndChangeCheck())
+                InstanceManager.instances.Save();
+
+        }
+
+        #endregion
 
     }
 

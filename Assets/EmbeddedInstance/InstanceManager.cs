@@ -1,229 +1,81 @@
-﻿#pragma warning disable IDE1006 // Naming Styles
-
+﻿using InstanceManager.Models;
+using InstanceManager.Utility;
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Diagnostics;
-using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 using UnityEditor;
-using UnityEngine;
-using Debug = UnityEngine.Debug;
 
-namespace EmbeddedInstance
+namespace InstanceManager
 {
 
+    /// <summary>The main class of Instance Manager.</summary>
     public static class InstanceManager
     {
 
-        static readonly Dictionary<int, string> SymLinkerErrorCodes = new Dictionary<int, string>()
-        {
-            { -1, "Unknown error."},
-            { 1,  "Process is not elevated." },
-            { 2,  "Source folder does not exist." },
-            { 3,  "Target folder is not empty." },
-            { 4,  "Source and target folders are the same."},
-        };
+        //TODO: Do we have any listeners for EditorApplication.quit? Unity window close button need multiple clicks to close window?
+        //TODO: Add prompt in window to install symlinker if it does not exist
+        //TODO: Can we get current window layout? if so, we should prevent layout apply if same
 
-        [Serializable]
-        public class InstanceCollection : IReadOnlyList<UnityInstance>
-        {
+        internal const string idParamName = "-instanceID:";
 
-            [SerializeField] List<UnityInstance> list = new List<UnityInstance>();
-
-            public UnityInstance this[int index] =>
-                ((IReadOnlyList<UnityInstance>)list)[index];
-
-            public int Count =>
-                ((IReadOnlyCollection<UnityInstance>)list).Count;
-
-            public IEnumerator<UnityInstance> GetEnumerator() =>
-                ((IEnumerable<UnityInstance>)list).GetEnumerator();
-
-            IEnumerator IEnumerable.GetEnumerator() =>
-                ((IEnumerable)list).GetEnumerator();
-
-            internal UnityInstance Add(UnityInstance instance)
-            {
-                list.Add(instance);
-                Save();
-                return instance;
-            }
-
-            internal void Remove(UnityInstance instance)
-            {
-                list.RemoveAll(i => i.ID == instance.ID);
-                Save();
-            }
-
-        }
-
-        static string projectPath => Directory.GetParent(Application.dataPath).FullName;
-
-        static string path => Directory.CreateDirectory(Path.Combine(projectPath, "EmbeddedInstances")).FullName;
-        static string symLinkerPath => Path.Combine(path, "SymLinker.exe");
-        static string listPath => Path.Combine(path, "lists.json");
-        static string InstancePath(string listID) => Path.Combine(path, listID);
-
+        /// <summary>The secondary instances that have been to this project.</summary>
         public static InstanceCollection instances { get; private set; }
 
+        /// <summary>The current instance. <see langword="null"/> if primary.</summary>
+        public static UnityInstance instance { get; private set; }
+
+        /// <summary>Occurs during startup if current instance is secondary.</summary>
+        public static event Action onSecondInstanceStarted;
+
+        /// <summary>Gets if the current instance is the primary instance.</summary>
+        public static bool isPrimaryInstance { get; private set; }
+
+        /// <summary>Gets if the current instance is a secondary instance.</summary>
+        public static bool isSecondInstance { get; private set; }
+
+        /// <summary>Gets the id of the current instance. <see langword="null"/> if primary.</summary>
+        public static string id { get; private set; }
+
         [InitializeOnLoadMethod]
-        public static void Reload()
-        {
-            instances = Load() ?? new InstanceCollection();
-            EditorApplication.wantsToQuit += EditorApplication_wantsToQuit;
-        }
-
-        private static bool EditorApplication_wantsToQuit()
-        {
-            foreach (var instance in instances)
-                instance?.Close();
-            return true;
-        }
-
-        public static void Save()
+        static void OnLoad()
         {
 
-            if (instances is null)
-                return;
+            id = Environment.GetCommandLineArgs().FirstOrDefault(a => a.StartsWith(idParamName))?.Replace(idParamName, "");
+            isSecondInstance = !string.IsNullOrWhiteSpace(id);
+            isPrimaryInstance = !isSecondInstance;
 
-            var json = JsonUtility.ToJson(instances);
-            File.WriteAllText(listPath, json);
+            instances = new InstanceCollection();
+            instances.Reload();
+
+            if (isPrimaryInstance)
+                InitializePrimaryInstance();
+            else
+                InitializeSecondInstance();
 
         }
 
-        static InstanceCollection Load()
+        static void InitializePrimaryInstance()
         {
-
-            if (!File.Exists(listPath))
-                return null;
-
-            var json = File.ReadAllText(listPath);
-            var instances = JsonUtility.FromJson<InstanceCollection>(json);
-            return instances;
-
-        }
-
-        public static UnityInstance Create(Action onComplete = null)
-        {
-
-            if (!File.Exists(symLinkerPath))
+            EditorApplication.wantsToQuit += () =>
             {
-                Debug.LogError(@"Could not find SymLinker tool, please reinstall Instance Manager, or follow instructions at <a>https://github.com/zumwani/unity-instance-manager/wiki/symlinker</a>.");
-                return null;
-            }
-
-            var id = GenerateID(validate: id => !Directory.Exists(InstancePath(id)));
-            var path = InstancePath(id);
-            var instance = new UnityInstance(id, path)
-            {
-                isSettingUp = true
+                foreach (var instance in instances)
+                    instance?.Close();
+                return true;
             };
-
-            SymLink("Creating new instance", projectPath.WithQuotes(), path.WithQuotes(),
-                onComplete: () =>
-                {
-                    instance.isSettingUp = false;
-                    onComplete?.Invoke();
-                });
-
-            return instances.Add(instance);
-
         }
 
-        public static string WithQuotes(this string s)
-        {
-            var q = @"""";
-            if (!s.StartsWith(q))
-                s = q + s;
-            if (!s.EndsWith(q))
-                s += q;
-            return s;
-        }
-
-        static string GenerateID(Func<string, bool> validate = null)
+        static async void InitializeSecondInstance()
         {
 
-            string id = null;
-            while (id is null || !(validate?.Invoke(id) ?? true))
-            {
-                var ticks = new DateTime(2016, 1, 1).Ticks;
-                var ans = DateTime.Now.Ticks - ticks;
-                id = ans.ToString("x");
-            }
+            //AssetDatabase.DisallowAutoRefresh();
 
-            return id;
+            await Task.Delay(100);
+            instance = instances.Find(id);
+            WindowLayoutUtility.Find(instance.preferredLayout).Apply();
+
+            onSecondInstanceStarted?.Invoke();
 
         }
-
-        public static void Delete(UnityInstance instance, Action onComplete = null)
-        {
-            instance.Close();
-            instance.isSettingUp = true;
-            SymLink(progressString: "Deleting instance", "-delete", instance.path,
-                onComplete: () =>
-                {
-                    instances.Remove(instance);
-                    onComplete?.Invoke();
-                });
-        }
-
-        internal static void SymLink(string progressString, string p1, string p2, Action onComplete = null) =>
-            EditorApplication.delayCall += () =>
-            {
-
-                var progress = Progress.Start(progressString, options: Progress.Options.Indefinite);
-
-                void OnComplete()
-                {
-                    onComplete?.Invoke();
-                    Progress.Remove(progress);
-                }
-
-                try
-                {
-
-                    var p = Process.Start(new ProcessStartInfo(symLinkerPath, p1 + " " + p2)
-                    {
-                        UseShellExecute = true,
-                        Verb = "runas",
-                        WindowStyle = ProcessWindowStyle.Hidden
-                    });
-
-                    p.EnableRaisingEvents = true;
-                    p.Exited += OnExit;
-
-                    void OnExit(object sender, EventArgs e)
-                    {
-
-                        //Run on main thread
-                        EditorApplication.delayCall += () =>
-                        {
-
-                            if (p.ExitCode != 0)
-                            {
-                                if (SymLinkerErrorCodes.TryGetValue(p.ExitCode, out var message))
-                                    Debug.LogError(message);
-                                else
-                                    Debug.LogError(new Win32Exception(p.ExitCode));
-                            }
-
-                            p.Exited -= OnExit;
-                            OnComplete();
-
-                        };
-                        EditorApplication.QueuePlayerLoopUpdate();
-
-                    }
-
-                }
-                catch (Exception e)
-                {
-                    Debug.LogError(e);
-                    OnComplete();
-                }
-
-            };
 
     }
 
