@@ -13,15 +13,6 @@ namespace InstanceManager._Editor
     public class InstanceManagerWindow : EditorWindow
     {
 
-        //TODO: Something is wrong which causes local multiplayer to not assign correct ids to each instance
-
-        //TODO: Check out: https://github.com/VeriorPies/ParrelSync/tree/95a062cb14e669c7834094366611765d3a9658d6
-        //TODO: Add /j to symlinker
-
-        //TODO: Allow set scene(s) to auto open
-        //TODO: Scenes do not reload on sync with main project
-        //TODO: Autosync by default and automatically sync when main project is changed, without needing unity window to be focused
-
         [MenuItem("Tools/Lazy/Instance Manager")]
         public static void Open()
         {
@@ -193,7 +184,12 @@ namespace InstanceManager._Editor
 
                 menu.AddSeparator("");
                 menu.AddItem(new GUIContent("Open in explorer..."), false, () => Process.Start("explorer", instance.path));
-                menu.AddItem(new GUIContent("Options..."), false, () => SetInstance(instance.ID));
+
+                if (instance.isRunning)
+                    menu.AddDisabledItem(new GUIContent("Options..."));
+                else
+                    menu.AddItem(new GUIContent("Options..."), false, () => SetInstance(instance.ID));
+
                 menu.AddSeparator("");
                 menu.AddItem(new GUIContent("Delete"), false, () => Remove(instance));
                 menu.ShowAsContext();
@@ -279,16 +275,27 @@ namespace InstanceManager._Editor
             GUILayout.EndHorizontal();
 
             EditorGUILayout.BeginVertical(new GUIStyle() { margin = new RectOffset(0, 0, 12, 0) });
+            EditorGUILayout.BeginHorizontal();
 
             var i = Array.IndexOf(layouts, instance.preferredLayout ?? "Default");
             if (i == -1) i = 0;
             instance.preferredLayout = layouts[EditorGUILayout.Popup("Preferred layout:", i, layouts)];
 
+            if (InstanceManager.isSecondInstance && GUILayout.Button("apply", GUILayout.ExpandWidth(false)))
+            {
+                WindowLayoutUtility.Find(instance.preferredLayout).Apply();
+                Open();
+            }
+
+            EditorGUILayout.EndHorizontal();
             EditorGUILayout.EndVertical();
             EditorGUILayout.EndVertical();
 
             if (EditorGUI.EndChangeCheck())
+            {
+                InstanceManager.instances.Update(instance);
                 InstanceManager.instances.Save();
+            }
 
         }
 

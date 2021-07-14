@@ -45,6 +45,39 @@ namespace InstanceManager.Utility
         public static Layout Find(string name) =>
             availableLayouts.FirstOrDefault(l => l.name == name);
 
+        public static Layout? GetCurrent()
+        {
+            if (GetLastLayoutName() is string str)
+                return new Layout(layoutsPath + "/" + str);
+            return null;
+        }
+
+        static string GetLastLayoutName()
+        {
+
+            var path = (string)getCurrentLayoutPath?.Invoke(null, null);
+
+            if (!File.Exists(path))
+                return null;
+
+            var propertyName = "m_LastLoadedLayoutName: ";
+
+            using (var reader = File.OpenText(path))
+            {
+
+                while (!reader.EndOfStream)
+                {
+                    var line = reader.ReadLine();
+                    if (line.TrimStart().StartsWith(propertyName))
+                        return line.Substring(line.IndexOf(": ") + 2);
+                }
+
+            }
+
+            return null;
+
+        }
+
         public struct Layout
         {
 
@@ -63,9 +96,10 @@ namespace InstanceManager.Utility
             /// <summary>Applies this layout, if available.</summary>
             public void Apply()
             {
-                if (isAvailable && File.Exists(path) && path.EndsWith(".wlt"))
+                if (isAvailable && File.Exists(path) && path.EndsWith(".wlt") && GetCurrent()?.name != name)
                     loadWindowLayout?.Invoke(null, new object[] { path, true });
             }
+
 
         }
 

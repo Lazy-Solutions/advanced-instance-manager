@@ -25,8 +25,10 @@ namespace InstanceManager.Models
         [SerializeField] private string m_ID;
         [SerializeField] private string m_path;
         [SerializeField] private int m_processID;
-        [SerializeField] private string m_preferredLayout;
-        [SerializeField] private bool m_autoSync;
+        [SerializeField] private string m_preferredLayout = "Default";
+        [SerializeField] private bool m_autoSync = true;
+
+        public event Action autoSyncChanged;
 
         /// <summary>Gets or sets the window layout.</summary>
         public string preferredLayout
@@ -39,7 +41,7 @@ namespace InstanceManager.Models
         public bool autoSync
         {
             get => m_autoSync;
-            set => m_autoSync = value;
+            set { m_autoSync = value; autoSyncChanged?.Invoke(); }
         }
 
         /// <summary>Gets whatever this instance is running.</summary>
@@ -106,13 +108,15 @@ namespace InstanceManager.Models
                 Open();
         }
 
-        /// <summary>Open default mode.</summary>
+        /// <summary>Open instance.</summary>
         public void Open()
         {
 
             InstanceProcess = Process.Start(new ProcessStartInfo(
                 fileName: EditorApplication.applicationPath,
-                arguments: InstanceManager.idParamName + ID));
+                arguments:
+                    InstanceManager.idParamName + ID +
+                    " -projectPath " + path.WithQuotes()));
 
             InstanceProcess.EnableRaisingEvents = true;
             InstanceProcess.Exited += InstanceProcess_Exited;

@@ -4,6 +4,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using UnityEditor;
+using UnityEngine;
 
 namespace InstanceManager
 {
@@ -13,8 +14,17 @@ namespace InstanceManager
     {
 
         //TODO: Do we have any listeners for EditorApplication.quit? Unity window close button need multiple clicks to close window?
-        //TODO: Add prompt in window to install symlinker if it does not exist
-        //TODO: Can we get current window layout? if so, we should prevent layout apply if same
+        //TODO: Check '-hubSessionId' if we can use that to remove secondary instance from hub
+
+        //TODO: Something is wrong which causes local multiplayer to not assign correct ids to each instance
+
+        //TODO: Check out: https://github.com/VeriorPies/ParrelSync/tree/95a062cb14e669c7834094366611765d3a9658d6
+
+        //TODO: Allow set scene(s) to auto open
+        //TODO: Scenes do not reload on sync with main project
+        //TODO: Cache GUIContent and GUIStyle
+        //TODO: 'Library/LastSceneManagerSetup.txt' can be used to set scene layout for instances
+        //TODO: Push symlinker to a separate repo and set it up so that exe can be downloaded directly from there, present download link to user if not installed
 
         internal const string idParamName = "-instanceID:";
 
@@ -41,7 +51,7 @@ namespace InstanceManager
         {
 
             id = Environment.GetCommandLineArgs().FirstOrDefault(a => a.StartsWith(idParamName))?.Replace(idParamName, "");
-            isSecondInstance = !string.IsNullOrWhiteSpace(id);
+            isSecondInstance = !string.IsNullOrWhiteSpace(id) && Application.dataPath.Contains("/EmbeddedInstances/" + id);
             isPrimaryInstance = !isSecondInstance;
 
             instances = new InstanceCollection();
@@ -54,6 +64,7 @@ namespace InstanceManager
 
         }
 
+
         static void InitializePrimaryInstance()
         {
             EditorApplication.wantsToQuit += () =>
@@ -64,16 +75,32 @@ namespace InstanceManager
             };
         }
 
+        static bool hasSetAutoRefresh;
         static async void InitializeSecondInstance()
         {
-
-            //AssetDatabase.DisallowAutoRefresh();
 
             await Task.Delay(100);
             instance = instances.Find(id);
             WindowLayoutUtility.Find(instance.preferredLayout).Apply();
 
+            UpdateAutoSync();
+            instance.autoSyncChanged += UpdateAutoSync;
+
             onSecondInstanceStarted?.Invoke();
+
+            void UpdateAutoSync()
+            {
+                if (!instance.autoSync && !hasSetAutoRefresh)
+                {
+                    AssetDatabase.DisallowAutoRefresh();
+                    hasSetAutoRefresh = true;
+                }
+                else if (hasSetAutoRefresh)
+                {
+                    AssetDatabase.AllowAutoRefresh();
+                    hasSetAutoRefresh = false;
+                }
+            }
 
         }
 

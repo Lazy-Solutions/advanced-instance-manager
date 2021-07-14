@@ -63,7 +63,8 @@ namespace InstanceManager.Utility
             if (list is null)
                 list = new List<UnityInstance>();
             list.Clear();
-            list.AddRange(Load());
+            if (Load() is InstanceCollection collection)
+                list.AddRange(collection);
         }
 
         /// <summary>Create a new secondary instance.</summary>
@@ -106,6 +107,15 @@ namespace InstanceManager.Utility
                     Save();
                     onComplete?.Invoke();
                 });
+        }
+
+        /// <summary>Updates the instance properties. This makes sure that the correct c# instance of the object is up-to-date, with the specified object.</summary>
+        public void Update(UnityInstance instance)
+        {
+            var inList = Find(instance.ID);
+            inList.preferredLayout = instance.preferredLayout;
+            inList.autoSync = instance.autoSync;
+            Save();
         }
 
     }
