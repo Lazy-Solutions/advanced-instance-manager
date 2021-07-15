@@ -20,6 +20,12 @@ namespace InstanceManager.Utility
         /// <summary>The path to lists.json. The secondary instance list meta data.</summary>
         public static string listPath => Path.Combine(embeddedInstances, "lists.json");
 
+        /// <summary>The path to symlinker.exe.</summary>
+        public static string symLinker => Path.Combine(embeddedInstances, "SymLinker.exe");
+
+        /// <summary>The path to symlinker.version.</summary>
+        public static string symLinkerVersion => Path.Combine(embeddedInstances, "SymLinker.version");
+
         /// <summary>Gets the path to the specified secondary instance.</summary>
         public static string InstancePath(string listID) => Path.Combine(embeddedInstances, listID);
 

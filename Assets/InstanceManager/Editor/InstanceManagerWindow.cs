@@ -5,7 +5,6 @@ using System.Diagnostics;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
-using Debug = UnityEngine.Debug;
 
 namespace InstanceManager._Editor
 {
@@ -63,6 +62,7 @@ namespace InstanceManager._Editor
         void OnFocus()
         {
             InstanceManager.instances.Reload();
+            UpdateSymLinker();
         }
 
         Vector2 scrollPos;
@@ -82,7 +82,6 @@ namespace InstanceManager._Editor
 
         }
 
-
         [NonSerialized] UnityInstance instance;
 
         void ClearInstance() =>
@@ -90,7 +89,7 @@ namespace InstanceManager._Editor
 
         void SetInstance(string id)
         {
-            Debug.Log("Instance set: " + id);
+            //Debug.Log("Instance set: " + id);
             instance = !string.IsNullOrEmpty(id)
             ? InstanceManager.instances.Find(id)
             : null;
@@ -114,8 +113,6 @@ namespace InstanceManager._Editor
             GUI.color = new Color32(40, 40, 40, 255);
             GUI.DrawTexture(new Rect(0, 0, maxSize.x, maxSize.y), EditorGUIUtility.whiteTexture, ScaleMode.StretchToFill);
             GUI.color = c;
-
-            DrawHeader();
 
             DrawInstanceRow("ID:", "Status:                     ");
 
@@ -200,13 +197,38 @@ namespace InstanceManager._Editor
 
         }
 
-        void DrawHeader()
+        bool symLinkerHasAnUpdate;
+        bool symLinkerInstalled;
+        async void UpdateSymLinker()
         {
-
+            symLinkerHasAnUpdate = false;
+            symLinkerInstalled = SymLinkUtility.isAvailable;
+            Repaint();
+            symLinkerHasAnUpdate = await SymLinkUtility.HasUpdate();
+            Repaint();
         }
 
         void DrawFooter()
         {
+
+            if (symLinkerHasAnUpdate || !symLinkerInstalled)
+            {
+
+                EditorGUILayout.BeginHorizontal();
+                var symLinkerUpdate = new GUIContent(symLinkerInstalled ? "SymLinker.exe has an update available." : "SymLinker.exe is not installed.");
+                var size = EditorStyles.label.CalcSize(symLinkerUpdate);
+                EditorGUILayout.LabelField(symLinkerUpdate, GUILayout.Width(size.x));
+                GUILayout.FlexibleSpace();
+
+                if (GUILayout.Button("Github", GUILayout.ExpandWidth(false)))
+                    Process.Start("https://github.com/Lazy-Solutions/InstanceManager.SymLinker");
+
+                if (GUILayout.Button(symLinkerInstalled ? "Update" : "Install", GUILayout.ExpandWidth(false)))
+                    SymLinkUtility.Update(onDone: UpdateSymLinker);
+
+                EditorGUILayout.EndHorizontal();
+
+            }
 
             var r = GUILayoutUtility.GetRect(Screen.width, 1);
 
@@ -223,6 +245,8 @@ namespace InstanceManager._Editor
             EditorGUILayout.BeginHorizontal(Style.margin);
             GUILayout.FlexibleSpace();
 
+            GUI.enabled = symLinkerInstalled;
+
             if (GUILayout.Button("Create new instance", Style.createButton))
             {
 
@@ -235,6 +259,8 @@ namespace InstanceManager._Editor
                 GUIUtility.ExitGUI();
 
             }
+
+            GUI.enabled = true;
 
             EditorGUILayout.EndHorizontal();
 

@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
+using System.Net;
+using System.Threading.Tasks;
 using UnityEditor;
 using Debug = UnityEngine.Debug;
 
@@ -17,8 +19,6 @@ namespace InstanceManager.Utility
 
         const string DeleteHubEntryParam = "-delHubEntry";
         const string DeleteParam = "-delete";
-
-        static string symLinkerPath => Path.Combine(Paths.project, "EmbeddedInstances", "SymLinker.exe");
 
         static readonly Dictionary<int, string> SymLinkerErrorCodes = new Dictionary<int, string>()
         {
@@ -39,7 +39,7 @@ namespace InstanceManager.Utility
 
         /// <summary>Gets if sym linker is available.</summary>
         public static bool isAvailable =>
-            File.Exists(symLinkerPath);
+            File.Exists(Paths.symLinker);
 
         /// <summary>Creates a new secondary instance.</summary>
         public static void Create(string progressString, string projectPath, string targetPath, Action onComplete = null) =>
@@ -71,7 +71,7 @@ namespace InstanceManager.Utility
                 try
                 {
 
-                    var p = Process.Start(new ProcessStartInfo(symLinkerPath, p1 + " " + p2)
+                    var p = Process.Start(new ProcessStartInfo(Paths.symLinker, p1 + " " + p2)
                     {
                         UseShellExecute = true,
                         Verb = "runas",
@@ -112,6 +112,74 @@ namespace InstanceManager.Utility
                 }
 
             };
+
+        public static async Task<bool> HasUpdate() =>
+         !isAvailable || (await GetLatestVersion() > GetInstalledVersion());
+
+        static Uri SymLinkerExe => new Uri("https://raw.githubusercontent.com/Lazy-Solutions/InstanceManager.SymLinker/main/publish/SymLinker.exe");
+        static Uri SymLinkerVersion => new Uri("https://raw.githubusercontent.com/Lazy-Solutions/InstanceManager.SymLinker/main/publish/SymLinker.version");
+
+        public static async Task<int?> GetLatestVersion()
+        {
+
+            using (var client = new WebClient())
+            {
+                var str = await client.DownloadStringTaskAsync(SymLinkerVersion);
+                if (int.TryParse(str, out var i))
+                    return i;
+            }
+
+            return null;
+
+        }
+
+        public static int GetInstalledVersion()
+        {
+
+            if (File.Exists(Paths.symLinkerVersion))
+            {
+                var str = File.ReadAllText(Paths.symLinkerVersion);
+                if (int.TryParse(str, out var i))
+                    return i;
+            }
+
+            return 0;
+
+        }
+
+        public static async void Update(Action onDone = null)
+        {
+
+            EditorApplication.update += OnUpdate;
+
+            await Task.WhenAll(
+                            Download(SymLinkerExe, Paths.symLinker),
+                            Download(SymLinkerVersion, Paths.symLinkerVersion));
+
+            await Task.Delay(750);
+
+            EditorApplication.update -= OnUpdate;
+            EditorUtility.ClearProgressBar();
+            onDone?.Invoke();
+
+            async Task Download(Uri uri, string file)
+            {
+
+                if (File.Exists(file))
+                    File.Delete(file);
+
+                using (var client = new WebClient())
+                    await client.DownloadFileTaskAsync(uri, file);
+
+            }
+
+            void OnUpdate()
+            {
+                EditorUtility.DisplayProgressBar("Updating SymLinker.exe", "Updating...", 0);
+                EditorApplication.QueuePlayerLoopUpdate();
+            }
+
+        }
 
     }
 

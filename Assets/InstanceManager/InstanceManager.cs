@@ -13,7 +13,6 @@ namespace InstanceManager
     public static class InstanceManager
     {
 
-        //TODO: Do we have any listeners for EditorApplication.quit? Unity window close button need multiple clicks to close window?
         //TODO: Check '-hubSessionId' if we can use that to remove secondary instance from hub
 
         //TODO: Something is wrong which causes local multiplayer to not assign correct ids to each instance
@@ -24,7 +23,6 @@ namespace InstanceManager
         //TODO: Scenes do not reload on sync with main project
         //TODO: Cache GUIContent and GUIStyle
         //TODO: 'Library/LastSceneManagerSetup.txt' can be used to set scene layout for instances
-        //TODO: Push symlinker to a separate repo and set it up so that exe can be downloaded directly from there, present download link to user if not installed
 
         internal const string idParamName = "-instanceID:";
 
@@ -63,7 +61,6 @@ namespace InstanceManager
                 InitializeSecondInstance();
 
         }
-
 
         static void InitializePrimaryInstance()
         {
