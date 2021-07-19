@@ -27,8 +27,9 @@ namespace InstanceManager.Models
         [SerializeField] private int m_processID;
         [SerializeField] private string m_preferredLayout = "Default";
         [SerializeField] private bool m_autoSync = true;
+        [SerializeField] private bool m_enterPlayModeAutomatically = true;
 
-        public event Action autoSyncChanged;
+        public static event Action autoSyncChanged;
 
         /// <summary>Gets or sets the window layout.</summary>
         public string preferredLayout
@@ -41,7 +42,20 @@ namespace InstanceManager.Models
         public bool autoSync
         {
             get => m_autoSync;
-            set { m_autoSync = value; autoSyncChanged?.Invoke(); }
+            set
+            {
+                var prevValue = m_autoSync;
+                m_autoSync = value;
+                if (prevValue != value)
+                    autoSyncChanged?.Invoke();
+            }
+        }
+
+        /// <summary>Gets or sets whatever this instance should enter / exit play mode automatically when primary instance does.</summary>
+        public bool enterPlayModeAutomatically
+        {
+            get => m_enterPlayModeAutomatically;
+            set => m_enterPlayModeAutomatically = value;
         }
 
         /// <summary>Gets whatever this instance is running.</summary>

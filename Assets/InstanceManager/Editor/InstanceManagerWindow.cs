@@ -71,8 +71,6 @@ namespace InstanceManager._Editor
 
             UnfocusOnClick();
 
-            minSize = new Vector2(450, 350);
-
             Style.Initialize();
 
             if (instance is null)
@@ -108,6 +106,8 @@ namespace InstanceManager._Editor
 
         void PrimaryInstance_OnGUI()
         {
+
+            minSize = new Vector2(450, 350);
 
             var c = GUI.color;
             GUI.color = new Color32(40, 40, 40, 255);
@@ -272,6 +272,8 @@ namespace InstanceManager._Editor
         void SecondaryInstance_OnGUI()
         {
 
+            minSize = new Vector2(450, 82);
+
             EditorGUILayout.BeginVertical(new GUIStyle() { margin = new RectOffset(6, 6, 6, 6) });
 
             GUILayout.BeginHorizontal();
@@ -296,12 +298,14 @@ namespace InstanceManager._Editor
 
             if (InstanceManager.isSecondInstance &&
                 GUILayout.Button(new GUIContent("↻", "Sync with primary instance"), GUILayout.ExpandWidth(false)))
-                AssetDatabase.Refresh();
+            {
+                AssetDatabase.Refresh(ImportAssetOptions.ForceUpdate);
+                Open();
+            }
 
             GUILayout.EndHorizontal();
 
-            EditorGUILayout.BeginVertical(new GUIStyle() { margin = new RectOffset(0, 0, 12, 0) });
-            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.BeginHorizontal(new GUIStyle() { margin = new RectOffset(0, 0, 12, 0) });
 
             var i = Array.IndexOf(layouts, instance.preferredLayout ?? "Default");
             if (i == -1) i = 0;
@@ -314,14 +318,20 @@ namespace InstanceManager._Editor
             }
 
             EditorGUILayout.EndHorizontal();
-            EditorGUILayout.EndVertical();
+
+            EditorGUILayout.BeginHorizontal(new GUIStyle() { margin = new RectOffset(0, 0, 12, 0) });
+
+            var content = new GUIContent("Enter and exit playmode automatically when primary instance does");
+            var contentSize = EditorStyles.label.CalcSize(content);
+            EditorGUILayout.LabelField("Enter and exit playmode automatically when primary instance does", GUILayout.Width(contentSize.x));
+            instance.enterPlayModeAutomatically = EditorGUILayout.Toggle(instance.enterPlayModeAutomatically);
+
+            EditorGUILayout.EndHorizontal();
+
             EditorGUILayout.EndVertical();
 
             if (EditorGUI.EndChangeCheck())
-            {
                 InstanceManager.instances.Update(instance);
-                InstanceManager.instances.Save();
-            }
 
         }
 

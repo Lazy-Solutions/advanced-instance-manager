@@ -115,6 +115,7 @@ namespace InstanceManager.Utility
             var inList = Find(instance.ID);
             inList.preferredLayout = instance.preferredLayout;
             inList.autoSync = instance.autoSync;
+            inList.enterPlayModeAutomatically = instance.enterPlayModeAutomatically;
             Save();
         }
 
