@@ -1,7 +1,9 @@
-using InstanceManager._Editor;
+using InstanceManager.Editor;
 using InstanceManager.Utility;
 using System;
 using System.Diagnostics;
+using System.Linq;
+using System.Threading.Tasks;
 using UnityEditor;
 using UnityEngine;
 
@@ -28,6 +30,7 @@ namespace InstanceManager.Models
         [SerializeField] private string m_preferredLayout = "Default";
         [SerializeField] private bool m_autoSync = true;
         [SerializeField] private bool m_enterPlayModeAutomatically = true;
+        [SerializeField] private string[] m_scenes;
 
         public static event Action autoSyncChanged;
 
@@ -58,6 +61,13 @@ namespace InstanceManager.Models
             set => m_enterPlayModeAutomatically = value;
         }
 
+        /// <summary>Gets the scenes this instance should open when starting.</summary>
+        public string[] scenes
+        {
+            get => m_scenes;
+            set => m_scenes = value;
+        }
+
         /// <summary>Gets whatever this instance is running.</summary>
         public bool isRunning
         {
@@ -69,7 +79,7 @@ namespace InstanceManager.Models
         }
 
         /// <summary>Gets the id of this instance.</summary>
-        public string ID => m_ID;
+        public string id => m_ID;
 
         /// <summary>Gets the path of this instance.</summary>
         public string path => m_path;
@@ -113,6 +123,30 @@ namespace InstanceManager.Models
 
         #endregion
 
+        /// <summary>Set property of scene.</summary>
+        /// <param name="enabled">Set whatever this scene is enabled or not.</param>
+        /// <param name="index">Set the index of this scene.</param>
+        public void SetScene(string path, bool? enabled = null, int? index = null)
+        {
+
+            m_scenes ??= Array.Empty<string>();
+            if (enabled.HasValue)
+            {
+                if (enabled.Value && !m_scenes.Contains(path))
+                    ArrayUtility.Add(ref m_scenes, path);
+                else if (m_scenes.Contains(path))
+                    ArrayUtility.Remove(ref m_scenes, path);
+            }
+
+            if (index.HasValue && m_scenes.Contains(path))
+            {
+                index = Mathf.Clamp(index.Value, 0, m_scenes.Length - 1);
+                ArrayUtility.Remove(ref m_scenes, path);
+                ArrayUtility.Insert(ref m_scenes, index.Value, path);
+            }
+
+        }
+
         /// <summary>Open if not running, othewise close.</summary>
         public void ToggleOpen()
         {
@@ -122,15 +156,19 @@ namespace InstanceManager.Models
                 Open();
         }
 
+        CrossProcessEvent quitRequest;
         /// <summary>Open instance.</summary>
         public void Open()
         {
 
+            if (InstanceManager.isSecondInstance || isRunning)
+                return;
+
+            quitRequest = new CrossProcessEvent($"QuitRequest ({id})");
+            quitRequest.InitializeHost();
             InstanceProcess = Process.Start(new ProcessStartInfo(
                 fileName: EditorApplication.applicationPath,
-                arguments:
-                    InstanceManager.idParamName + ID +
-                    " -projectPath " + path.WithQuotes()));
+                arguments: "-projectPath " + path.WithQuotes()));
 
             InstanceProcess.EnableRaisingEvents = true;
             InstanceProcess.Exited += InstanceProcess_Exited;
@@ -147,13 +185,46 @@ namespace InstanceManager.Models
         public void Close()
         {
 
+            if (InstanceManager.isSecondInstance || !isRunning)
+                return;
+
             if (InstanceProcess != null)
             {
-                InstanceProcess.Exited -= InstanceProcess_Exited;
-                if (!InstanceProcess.HasExited)
-                    InstanceProcess?.Kill();
-                InstanceProcess = null;
+
+                //Lets copy variable, since if we use property when killing process after 5
+                //seconds we'll end up using new instance process, if one started
+                var process = InstanceProcess;
+
+                process.Exited -= InstanceProcess_Exited;
+                if (!process.HasExited)
+                {
+
+                    //Send quit request since unity won't save settings unless EditorApplication.Exit() is called.
+                    //Process.Close() does nothing and Process.CloseMainWindow() closes, but does not save
+                    quitRequest = new CrossProcessEvent($"QuitRequest ({id})");
+                    quitRequest.InitializeHost();
+
+                    process.Exited += Exited;
+                    quitRequest.RaiseEvent();
+
+                    //In the off chance that the event was not registered in the secondary instance, lets kill process after 5 seconds
+                    _ = Task.Run(async () =>
+                    {
+                        await Task.Delay(5000);
+                        process?.Kill();
+                    });
+
+                    void Exited(object sender, EventArgs e)
+                    {
+                        process.Exited -= Exited;
+                        process = null;
+                    }
+
+                }
+
             }
+
+            InstanceProcess = null;
 
             SymLinkUtility.DeleteHubEntry("Deleting unity hub entry", path);
 

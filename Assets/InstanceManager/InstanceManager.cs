@@ -1,13 +1,11 @@
 ﻿using InstanceManager.Models;
 using InstanceManager.Utility;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Security.AccessControl;
-using System.Security.Principal;
-using System.Threading;
 using System.Threading.Tasks;
 using UnityEditor;
+using UnityEditor.Compilation;
+using UnityEditor.SceneManagement;
 using UnityEngine;
 
 namespace InstanceManager
@@ -20,14 +18,10 @@ namespace InstanceManager
         //TODO: Something is wrong which causes local multiplayer to not assign correct ids to each instance
         //TODO: Check out: https://github.com/VeriorPies/ParrelSync/tree/95a062cb14e669c7834094366611765d3a9658d6
 
-        //TODO: Scenes do not reload on sync with main project
-        //TODO: Cache GUIContent and GUIStyle
-        //TODO: Allow set scene(s) to auto open
         //TODO: 'Library/LastSceneManagerSetup.txt' can be used to set scene layout for instances
-        //TODO: Add event for secondary instances when main instance enters play mode, and add option for automatically entering play mode
-        //TODO: Add cross-process event for scripts reloading, reload asset database in instances then
 
-        internal const string idParamName = "-instanceID:";
+        //TODO: After release:
+        //TODO: Add multi-platform support
 
         /// <summary>The secondary instances that have been to this project.</summary>
         public static InstanceCollection instances { get; private set; }
@@ -76,113 +70,12 @@ namespace InstanceManager
 
         }
 
-        public class CrossProcessEvent
-        {
-
-            public CrossProcessEvent(string name) =>
-                this.name = name;
-
-            public bool isInitialized => waitHandle != null;
-            public bool isHost { get; private set; }
-            public string name { get; }
-
-            EventWaitHandle waitHandle;
-            CancellationTokenSource clientWaitToken;
-
-            readonly List<Action> actions = new List<Action>();
-
-            public void AddHandler(Action action) => actions.Add(action);
-            public void RemoveHandler(Action action) => actions.Remove(action);
-
-            public void RaiseEvent()
-            {
-
-                if (!isHost)
-                    throw new Exception("Cross-process events can only be raised on host.");
-
-                Debug.Log($"{name}: Raising event.");
-                waitHandle.Set();
-
-                //Call callbacks on host, not primary use case, but why not? its extra code either way (we'd need a check in AddHandler otherwise)
-                CallCallbacks();
-
-            }
-
-            void CallCallbacks()
-            {
-                Debug.Log($"{name} occured (background thread)");
-                EditorApplication.update += NextFrame;
-                EditorApplication.QueuePlayerLoopUpdate();
-                void NextFrame()
-                {
-                    EditorApplication.update -= NextFrame;
-                    Debug.Log($"{name} occured");
-                    foreach (var callback in actions)
-                        callback?.Invoke();
-                }
-            }
-
-            public void InitializeHost()
-            {
-
-                if (isInitialized)
-                    return;
-                isHost = true;
-
-                // create a rule that allows anybody in the "Users" group to synchronise with us
-                var users = new SecurityIdentifier(WellKnownSidType.BuiltinUsersSid, null);
-                var rule = new EventWaitHandleAccessRule(users, EventWaitHandleRights.Synchronize | EventWaitHandleRights.Modify, AccessControlType.Allow);
-                var security = new EventWaitHandleSecurity();
-                security.AddAccessRule(rule);
-
-                waitHandle = new EventWaitHandle(false, EventResetMode.AutoReset, @"Global\InstanceManager." + name, out var created, security);
-                waitHandle.Reset();
-
-                Debug.Log($"{name}: Registered event as host ({nameof(created)}:{created}).");
-
-            }
-
-            public async void InitializeClient()
-            {
-
-                if (isInitialized)
-                    return;
-                isHost = false;
-
-                await Task.Delay(1000);
-
-                waitHandle = new EventWaitHandle(false, EventResetMode.AutoReset, @"Global\InstanceManager." + name, out var created);
-                if (created)
-                    throw new Exception("Cannot subscribe to a cross-process event if no host has registered it.");
-
-                clientWaitToken?.Cancel();
-                clientWaitToken = new CancellationTokenSource();
-
-                _ = Task.Factory.StartNew(WaitUntilSignalled, TaskCreationOptions.LongRunning);
-                Debug.Log($"{name}: Registered event as client.");
-
-            }
-
-            void WaitUntilSignalled()
-            {
-                while (true)
-                {
-
-                    if (waitHandle.WaitOne(500))
-                        CallCallbacks();
-                    if (waitHandle is null || clientWaitToken.IsCancellationRequested)
-                        return;
-
-                }
-            }
-
-        }
-
         public static CrossProcessEvent OnHostEnterPlayMode { get; } = new CrossProcessEvent(nameof(OnHostEnterPlayMode));
         public static CrossProcessEvent OnHostExitPlayMode { get; } = new CrossProcessEvent(nameof(OnHostExitPlayMode));
-        //public static CrossProcessEvent OnHostPause { get; } = new CrossProcessEvent(nameof(OnHostPause));
-        //public static CrossProcessEvent OnHostUnpause { get; } = new CrossProcessEvent(nameof(OnHostUnpause));
+        public static CrossProcessEvent OnHostPause { get; } = new CrossProcessEvent(nameof(OnHostPause));
+        public static CrossProcessEvent OnHostUnpause { get; } = new CrossProcessEvent(nameof(OnHostUnpause));
         public static CrossProcessEvent OnAssetsChange { get; } = new CrossProcessEvent(nameof(OnAssetsChange));
+        static CrossProcessEvent quitRequest;
 
         class AssetsChangedCallback : AssetPostprocessor
         {
@@ -203,8 +96,8 @@ namespace InstanceManager
 
                 OnHostEnterPlayMode.InitializeHost();
                 OnHostExitPlayMode.InitializeHost();
-                //OnHostPause.InitializeHost();
-                //OnHostUnpause.InitializeHost();
+                OnHostPause.InitializeHost();
+                OnHostUnpause.InitializeHost();
                 OnAssetsChange.InitializeHost();
 
                 EditorApplication.playModeStateChanged += (state) =>
@@ -215,14 +108,13 @@ namespace InstanceManager
                         OnHostExitPlayMode.RaiseEvent();
                 };
 
-
-                //EditorApplication.pauseStateChanged += (state) =>
-                //{
-                //    if (state == PauseState.Paused)
-                //        OnHostPause.RaiseEvent();
-                //    else if (state == PauseState.Unpaused)
-                //        OnHostUnpause.RaiseEvent();
-                //};
+                EditorApplication.pauseStateChanged += (state) =>
+                {
+                    if (state == PauseState.Paused)
+                        OnHostPause.RaiseEvent();
+                    else if (state == PauseState.Unpaused)
+                        OnHostUnpause.RaiseEvent();
+                };
 
             }
             else
@@ -230,20 +122,21 @@ namespace InstanceManager
 
                 OnHostEnterPlayMode.InitializeClient();
                 OnHostExitPlayMode.InitializeClient();
-                //OnHostPause.InitializeClient();
-                //OnHostUnpause.InitializeClient();
+                OnHostPause.InitializeClient();
+                OnHostUnpause.InitializeClient();
                 OnAssetsChange.InitializeClient();
 
                 OnHostEnterPlayMode.AddHandler(() => { if (instance.enterPlayModeAutomatically) EditorApplication.EnterPlaymode(); });
                 OnHostExitPlayMode.AddHandler(() => { if (instance.enterPlayModeAutomatically) EditorApplication.ExitPlaymode(); });
-                //OnHostPause.AddHandler(() => { if (instance.enterPlayModeAutomatically) EditorApplication.isPaused = true; });
-                //OnHostUnpause.AddHandler(() => { if (instance.enterPlayModeAutomatically) EditorApplication.isPaused = false; });
-                OnAssetsChange.AddHandler(() => { if (instance.autoSync) AssetDatabase.Refresh(ImportAssetOptions.ForceUpdate); });
+                OnHostPause.AddHandler(() => { if (instance.enterPlayModeAutomatically) EditorApplication.isPaused = true; });
+                OnHostUnpause.AddHandler(() => { if (instance.enterPlayModeAutomatically) EditorApplication.isPaused = false; });
+                OnAssetsChange.AddHandler(() => { if (instance.autoSync) SyncWithPrimaryInstance(); });
+
+                quitRequest = new CrossProcessEvent($"QuitRequest ({id})");
+                quitRequest.InitializeClient();
+                quitRequest.AddHandler(() => EditorApplication.Exit(0));
 
             }
-
-            EditorApplication.QueuePlayerLoopUpdate();
-            EditorApplication.Step();
 
         }
 
@@ -269,8 +162,24 @@ namespace InstanceManager
             await Task.Delay(100);
             WindowLayoutUtility.Find(instance.preferredLayout).Apply();
 
-            AssetDatabase.DisallowAutoRefresh();
+            //AssetDatabase.DisallowAutoRefresh();
             onSecondInstanceStarted?.Invoke();
+
+        }
+
+
+        public static void SyncWithPrimaryInstance()
+        {
+
+            if (isPrimaryInstance)
+                return;
+
+            AssetDatabase.Refresh(ImportAssetOptions.ForceUpdate);
+
+            var setup = EditorSceneManager.GetSceneManagerSetup();
+            EditorSceneManager.RestoreSceneManagerSetup(setup);
+
+            CompilationPipeline.RequestScriptCompilation();
 
         }
 

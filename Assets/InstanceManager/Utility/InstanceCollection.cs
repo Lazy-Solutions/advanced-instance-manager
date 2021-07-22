@@ -36,7 +36,7 @@ namespace InstanceManager.Utility
 
         /// <summary>Finds the secondary instance with the specified id.</summary>
         public UnityInstance Find(string id) =>
-            list.FirstOrDefault(i => i.ID == id);
+            list.FirstOrDefault(i => i.id == id);
 
         /// <summary>Saves the instance meta data to disk.</summary>
         public void Save()
@@ -112,10 +112,11 @@ namespace InstanceManager.Utility
         /// <summary>Updates the instance properties. This makes sure that the correct c# instance of the object is up-to-date, with the specified object.</summary>
         public void Update(UnityInstance instance)
         {
-            var inList = Find(instance.ID);
+            var inList = Find(instance.id);
             inList.preferredLayout = instance.preferredLayout;
             inList.autoSync = instance.autoSync;
             inList.enterPlayModeAutomatically = instance.enterPlayModeAutomatically;
+            inList.scenes = instance.scenes;
             Save();
         }
 
