@@ -282,6 +282,11 @@ namespace InstanceManager.Editor
 
             }
 
+            public override void OnEnable()
+            {
+                UpdateSymLinker();
+            }
+
             public override void OnFocus()
             {
                 UpdateSymLinker();
@@ -385,6 +390,7 @@ namespace InstanceManager.Editor
             {
                 symLinkerHasAnUpdate = false;
                 symLinkerInstalled = SymLinkUtility.isAvailable;
+                symLinkerHasAnUpdate = false;
                 if (window) window.Repaint();
                 symLinkerHasAnUpdate = await SymLinkUtility.HasUpdate();
                 if (window) window.Repaint();
