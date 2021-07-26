@@ -2,6 +2,7 @@ using InstanceManager.Editor;
 using InstanceManager.Utility;
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using UnityEditor;
@@ -74,7 +75,7 @@ namespace InstanceManager.Models
             get
             {
                 InstanceProcess?.Refresh();
-                return !(InstanceProcess?.HasExited ?? true);
+                return InstanceProcess != null && !InstanceProcess.HasExited;
             }
         }
 
@@ -164,6 +165,7 @@ namespace InstanceManager.Models
             if (InstanceManager.isSecondInstance || isRunning)
                 return;
 
+            SetupScenes();
             quitRequest = new CrossProcessEvent($"QuitRequest ({id})");
             quitRequest.InitializeHost();
             InstanceProcess = Process.Start(new ProcessStartInfo(
@@ -176,55 +178,94 @@ namespace InstanceManager.Models
 
         }
 
-        void InstanceProcess_Exited(object sender, EventArgs e)
-        {
-            //Debug.Log("exited");
-            Close();
-        }
-
-        public void Close()
+        void SetupScenes()
         {
 
-            if (InstanceManager.isSecondInstance || !isRunning)
-                return;
+            var root = "sceneSetups:";
+            bool isFirstScene = true;
 
-            if (InstanceProcess != null)
+
+            string GetSceneString(string scenePath)
             {
 
-                //Lets copy variable, since if we use property when killing process after 5
-                //seconds we'll end up using new instance process, if one started
-                var process = InstanceProcess;
+                var str =
+                    "- path: " + scenePath + Environment.NewLine +
+                    "  isLoaded: 1" + Environment.NewLine +
+                    "  isActive: " + (isFirstScene ? "1" : "0") + Environment.NewLine +
+                    "  isSubScene: 0";
 
-                process.Exited -= InstanceProcess_Exited;
-                if (!process.HasExited)
-                {
-
-                    //Send quit request since unity won't save settings unless EditorApplication.Exit() is called.
-                    //Process.Close() does nothing and Process.CloseMainWindow() closes, but does not save
-                    quitRequest = new CrossProcessEvent($"QuitRequest ({id})");
-                    quitRequest.InitializeHost();
-
-                    process.Exited += Exited;
-                    quitRequest.RaiseEvent();
-
-                    //In the off chance that the event was not registered in the secondary instance, lets kill process after 5 seconds
-                    _ = Task.Run(async () =>
-                    {
-                        await Task.Delay(5000);
-                        process?.Kill();
-                    });
-
-                    void Exited(object sender, EventArgs e)
-                    {
-                        process.Exited -= Exited;
-                        process = null;
-                    }
-
-                }
+                isFirstScene = false;
+                return str;
 
             }
 
-            InstanceProcess = null;
+            var yaml = root + Environment.NewLine + string.Join(Environment.NewLine, scenes?.Select(GetSceneString));
+            File.WriteAllText(Path.Combine(path, "Library", "LastSceneManagerSetup.txt"), yaml);
+
+        }
+
+        void InstanceProcess_Exited(object sender, EventArgs e)
+        {
+            //Debug.Log("exited");
+            OnClosed();
+        }
+
+        public void Close(Action onClosed = null)
+        {
+
+            if (InstanceManager.isSecondInstance || !isRunning || InstanceProcess is null)
+                return;
+
+            //Lets copy variable, since if we use property when killing process after 5
+            //seconds we'll end up killing new instance process, if one started
+            var process = InstanceProcess;
+
+            process.Exited -= InstanceProcess_Exited;
+            if (!process.HasExited)
+            {
+
+                //Send quit request since unity won't save settings unless EditorApplication.Exit() is called.
+                //Process.Close() does nothing and Process.CloseMainWindow() closes, but does not save
+                quitRequest = new CrossProcessEvent($"QuitRequest ({id})");
+                quitRequest.InitializeHost();
+
+                process.Exited += Exited;
+                quitRequest.RaiseEvent();
+
+                //In the off chance that the event was not registered in the secondary instance, lets kill process after 5 seconds
+                _ = Task.Run(async () =>
+                {
+                    await Task.Delay(5000);
+                    process?.Kill();
+                });
+
+                void Exited(object sender, EventArgs e)
+                {
+                    process.Exited -= Exited;
+                    OnClosed();
+                }
+
+            }
+            else
+                OnClosed();
+
+            void OnClosed()
+            {
+
+                if (InstanceProcess == process)
+                    InstanceProcess = null;
+
+                this.OnClosed();
+
+                EditorApplication.delayCall += () =>
+                onClosed?.Invoke();
+
+            }
+
+        }
+
+        void OnClosed()
+        {
 
             SymLinkUtility.DeleteHubEntry("Deleting unity hub entry", path);
 

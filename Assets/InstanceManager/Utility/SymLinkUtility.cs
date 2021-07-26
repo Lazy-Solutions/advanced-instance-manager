@@ -24,7 +24,7 @@ namespace InstanceManager.Utility
         {
             { -1, "Unknown error."},
             { 1,  "Process is not elevated." },
-            { 2,  "Source folder does not exist." },
+            { 2,  "Source folder does not exist, or is locked." },
             { 3,  "Target folder is not empty." },
             { 4,  "Source and target folders are the same."},
         };

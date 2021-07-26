@@ -95,11 +95,15 @@ namespace InstanceManager.Utility
 
         }
 
-        /// <summary>Removes a secondary instance.</summary>
+        /// <summary>Removes a secondary instance. Instance has to be closed.</summary>
         public void Remove(UnityInstance instance, Action onComplete = null)
         {
-            instance.Close();
+
+            if (instance.isRunning)
+                throw new Exception("Cannot remove instance while running!");
+
             instance.isSettingUp = true;
+
             SymLinkUtility.Delete(progressString: "Deleting instance", instance.path,
                 onComplete: () =>
                 {
@@ -107,6 +111,7 @@ namespace InstanceManager.Utility
                     Save();
                     onComplete?.Invoke();
                 });
+
         }
 
         /// <summary>Updates the instance properties. This makes sure that the correct c# instance of the object is up-to-date, with the specified object.</summary>
