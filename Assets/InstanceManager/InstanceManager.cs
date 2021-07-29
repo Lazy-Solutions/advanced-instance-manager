@@ -18,11 +18,12 @@ namespace InstanceManager
         //TODO: Something is wrong which causes local multiplayer to not assign correct ids to each instance
         //TODO: Check out: https://github.com/VeriorPies/ParrelSync/tree/95a062cb14e669c7834094366611765d3a9658d6
 
-        //TODO: 'Library/LastSceneManagerSetup.txt' can be used to set scene layout for instances
         //TODO: Remove instance when 'No' is chosen at UAC prompt before running symlinker, and also if symlinker is killed (from task manager)
-        //TODO: Add menu button that opens instance context menu
         //TODO: Cannot get current window layout anymore
         //TODO: Check if we can't create symlinks without admin? ParrelSync seems to be able to do that?
+        //TODO: Move instances to outside of project folder, make instance paths relative to folder setting
+
+        //TODO: Verify folder (check if folders exists)
 
         //TODO: After release:
         //TODO: Add multi-platform support

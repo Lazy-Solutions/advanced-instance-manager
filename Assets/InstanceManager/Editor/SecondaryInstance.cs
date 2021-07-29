@@ -136,6 +136,9 @@ namespace InstanceManager.Editor
             void Scenes()
             {
 
+                if (scenes == null)
+                    RefreshScenes();
+
                 EditorGUILayout.BeginVertical(Style.elementMargin);
 
                 EditorGUILayout.BeginHorizontal();
@@ -158,11 +161,11 @@ namespace InstanceManager.Editor
 
                 scroll = EditorGUILayout.BeginScrollView(scroll, Style.scenesList, GUILayout.MaxHeight(float.MaxValue), GUILayout.MinWidth(window.position.width - 24));
 
-                if (addedScenes.Any())
+                if (addedScenes?.Any() ?? false)
                 {
 
                     foreach (var scene in addedScenes)
-                        DrawScene(scene);
+                        DrawScene(scene, canReorder: true);
 
                     if (scenes.Any())
                     {
@@ -175,25 +178,26 @@ namespace InstanceManager.Editor
 
                 }
 
-                foreach (var scene in scenes)
-                {
+                if (scenes != null)
+                    foreach (var scene in scenes)
+                    {
 
-                    if (string.IsNullOrWhiteSpace(scene.path))
-                        continue;
+                        if (string.IsNullOrWhiteSpace(scene.path))
+                            continue;
 
-                    if (!string.IsNullOrWhiteSpace(q) && !scene.path.ToLower().Contains(q.ToLower()))
-                        continue;
+                        if (!string.IsNullOrWhiteSpace(q) && !scene.path.ToLower().Contains(q.ToLower()))
+                            continue;
 
-                    DrawScene(scene);
+                        DrawScene(scene);
 
-                }
+                    }
 
                 EditorGUILayout.EndScrollView();
                 EditorGUILayout.EndVertical();
 
             }
 
-            void DrawScene((string path, SceneAsset asset, int index) scene)
+            void DrawScene((string path, SceneAsset asset, int index) scene, bool canReorder = false)
             {
 
                 EditorGUILayout.BeginHorizontal(Style.secondaryInstanceMargin);
@@ -210,21 +214,26 @@ namespace InstanceManager.Editor
                 EditorGUILayout.ObjectField(scene.asset, typeof(SceneAsset), allowSceneObjects: false, GUILayout.Height(22));
                 GUI.enabled = true;
 
-                GUI.enabled = scene.index > 0;
-                if (GUILayout.Button(Content.up, Style.moveSceneButton, GUILayout.ExpandWidth(false)))
+                if (canReorder)
                 {
-                    instance.SetScene(scene.path, index: scene.index - 1);
-                    RefreshScenes();
-                }
 
-                GUI.enabled = scene.index < instance.scenes?.Length - 1;
-                if (GUILayout.Button(Content.down, Style.moveSceneButton, GUILayout.ExpandWidth(false)))
-                {
-                    instance.SetScene(scene.path, index: scene.index + 1);
-                    RefreshScenes();
-                }
+                    GUI.enabled = scene.index > 0;
+                    if (GUILayout.Button(Content.up, Style.moveSceneButton, GUILayout.ExpandWidth(false)))
+                    {
+                        instance.SetScene(scene.path, index: scene.index - 1);
+                        RefreshScenes();
+                    }
 
-                GUI.enabled = true;
+                    GUI.enabled = scene.index < instance.scenes?.Length - 1;
+                    if (GUILayout.Button(Content.down, Style.moveSceneButton, GUILayout.ExpandWidth(false)))
+                    {
+                        instance.SetScene(scene.path, index: scene.index + 1);
+                        RefreshScenes();
+                    }
+
+                    GUI.enabled = true;
+
+                }
 
                 EditorGUILayout.EndHorizontal();
 

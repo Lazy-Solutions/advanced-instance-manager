@@ -1,5 +1,4 @@
 ﻿using InstanceManager.Models;
-using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
@@ -150,8 +149,8 @@ namespace InstanceManager.Editor
                 SetInstance(InstanceManager.id);
 
             //TODO: Debug, remove this
-            if (InstanceManager.instances.Any())
-                SetInstance(InstanceManager.instances.First().id);
+            //if (InstanceManager.instances.Any())
+            //    SetInstance(InstanceManager.instances.First().id);
 
             primary.OnEnable();
             secondary.OnEnable();

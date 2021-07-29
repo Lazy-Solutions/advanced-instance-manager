@@ -199,7 +199,7 @@ namespace InstanceManager.Models
 
             }
 
-            var yaml = root + Environment.NewLine + string.Join(Environment.NewLine, scenes?.Select(GetSceneString));
+            var yaml = root + Environment.NewLine + string.Join(Environment.NewLine, scenes?.Select(GetSceneString) ?? Array.Empty<string>());
             File.WriteAllText(Path.Combine(path, "Library", "LastSceneManagerSetup.txt"), yaml);
 
         }

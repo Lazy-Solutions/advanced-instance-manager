@@ -115,6 +115,9 @@ namespace InstanceManager.Editor
                 else if (GUILayout.Button(instance.isRunning ? Content.close : Content.open, GUILayout.ExpandWidth(false)))
                     instance.ToggleOpen();
 
+                var style = new GUIStyle(GUI.skin.button) { fontSize = 20, fixedWidth = 16, fixedHeight = 19 };
+                menuButtonPressed = openButtonValue.HasValue && GUILayout.Button("⋮", style, GUILayout.ExpandWidth(false));
+
                 EditorGUILayout.EndHorizontal();
                 if (instance != null)
                     ContextMenu_Item(instance);
@@ -123,13 +126,14 @@ namespace InstanceManager.Editor
 
             }
 
+            bool menuButtonPressed;
             void ContextMenu_Item(UnityInstance instance)
             {
 
                 var rect = new Rect(0, GUILayoutUtility.GetLastRect().y + 73, window.position.width, 40);
                 var pos = new Vector2(Event.current.mousePosition.x, Event.current.mousePosition.y + 73);
 
-                if (Event.current.type == EventType.ContextClick && rect.Contains(pos))
+                if ((menuButtonPressed || Event.current.type == EventType.ContextClick) && rect.Contains(pos))
                 {
 
                     var menu = new GenericMenu();

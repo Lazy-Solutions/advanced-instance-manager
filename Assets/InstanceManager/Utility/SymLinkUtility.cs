@@ -57,6 +57,9 @@ namespace InstanceManager.Utility
             EditorApplication.delayCall += () =>
             {
 
+                //var command = "/C mklink /J " + string.Format("\"{0}\" \"{1}\"", p2, p1);
+                //Process.Start("cmd", command);
+
                 if (!CheckAvailable())
                     return;
 
@@ -74,7 +77,7 @@ namespace InstanceManager.Utility
                     var p = Process.Start(new ProcessStartInfo(Paths.symLinker, p1 + " " + p2)
                     {
                         UseShellExecute = true,
-                        Verb = "runas",
+                        //Verb = "runas",
                         WindowStyle = ProcessWindowStyle.Hidden
                     });
 
