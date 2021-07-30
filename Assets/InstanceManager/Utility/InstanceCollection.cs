@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using UnityEngine;
 
 namespace InstanceManager.Utility
@@ -121,6 +122,35 @@ namespace InstanceManager.Utility
             inList.scenes = instance.scenes;
             Save();
         }
+
+        /// <summary>Gets if the instances are currently being moved. Instance Manager window and a lot of APIs will be unavailable when true.</summary>
+        public bool isMovingInstances { get; private set; }
+
+        /// <summary>Moves the instances to a new path. Folder must exist before calling this method and all instances must be closed.</summary>
+        public Task MoveInstancesPath(string newPath) =>
+            MoveInstancesPath(Paths.instancesPath, newPath);
+
+        Task MoveInstancesPath(string currentPath, string newPath) =>
+            ProgressUtility.RunTask(
+                displayName: "Moving instances",
+                canRun: !isMovingInstances && Directory.Exists(newPath) && currentPath != newPath,
+                onComplete: (t) => { if (!t.IsFaulted) Paths.instancesPath = newPath; },
+                task: new Task(() =>
+                {
+                    return;
+                    if (InstanceManager.instances.Any(i => i.isRunning))
+                        throw new Exception("All instances must be closed before moving instances path!");
+
+                    isMovingInstances = true;
+
+                    currentPath = @"G:\Github\Unity.InstanceManager\EmbeddedInstances\New folder";
+
+                    Directory.Delete(newPath);
+                    Directory.Move(currentPath, newPath);
+
+                    isMovingInstances = false;
+
+                }));
 
     }
 

@@ -33,6 +33,8 @@ namespace InstanceManager.Editor
 
             public static GUIStyle moveSceneButton { get; private set; }
 
+            public static GUIStyle menu { get; private set; }
+
             public static void Initialize()
             {
 
@@ -51,6 +53,7 @@ namespace InstanceManager.Editor
                 scenesSeparator.normal.background = EditorGUIUtility.whiteTexture;
 
                 moveSceneButton ??= new GUIStyle(GUI.skin.button) { fontSize = 18, fixedWidth = 21, fixedHeight = 21, padding = new RectOffset(2, 0, 0, 0) };
+                menu ??= new GUIStyle(GUI.skin.button) { fontSize = 20, fixedWidth = 16, fixedHeight = 19 };
 
             }
 
@@ -91,6 +94,10 @@ namespace InstanceManager.Editor
             public static GUIContent up { get; private set; }
             public static GUIContent down { get; private set; }
 
+            public static GUIContent movingInstances { get; private set; }
+            public static GUIContent menu { get; private set; }
+            public static GUIContent settings { get; private set; }
+
             public static void Initialize()
             {
 
@@ -126,6 +133,10 @@ namespace InstanceManager.Editor
                 up ??= new GUIContent("▴");
                 down ??= new GUIContent("▾");
 
+                movingInstances ??= new GUIContent("Moving instances...");
+                menu ??= new GUIContent("⋮");
+                settings ??= EditorGUIUtility.IconContent("d_Preset.Context", "Settings");
+
             }
 
         }
@@ -135,7 +146,7 @@ namespace InstanceManager.Editor
         void OnFocus()
         {
             InstanceManager.instances.Reload();
-            editor.OnFocus();
+            view.OnFocus();
         }
 
         void OnEnable()
@@ -148,30 +159,27 @@ namespace InstanceManager.Editor
             if (InstanceManager.isSecondInstance)
                 SetInstance(InstanceManager.id);
 
-            //TODO: Debug, remove this
-            //if (InstanceManager.instances.Any())
-            //    SetInstance(InstanceManager.instances.First().id);
-
-            primary.OnEnable();
-            secondary.OnEnable();
+            view.OnEnable();
 
         }
 
         void OnDisable()
         {
-            primary.OnDisable();
-            secondary.OnDisable();
+            view.OnDisable();
             window = null;
         }
 
-        static UnityInstance instance;
-
-        InstanceEditor editor => instance is null ? primary : secondary;
-        static InstanceEditor primary { get; } = new PrimaryInstance();
-        static InstanceEditor secondary { get; } = new SecondaryInstance();
+        static readonly Color overlay = new Color(0, 0, 0, 0.5f);
 
         void OnGUI()
         {
+
+            if (InstanceManager.instances.isMovingInstances)
+            {
+                SetView(mainView);
+                GUI.enabled = false;
+            }
+            SetView(settingsView);
 
             if (GUIExt.UnfocusOnClick())
                 Repaint();
@@ -179,34 +187,74 @@ namespace InstanceManager.Editor
             Style.Initialize();
             Content.Initialize();
 
-            if (editor.minSize.HasValue)
-                minSize = editor.minSize.Value;
+            if (view.minSize.HasValue)
+                minSize = view.minSize.Value;
 
             BeginCheckResize();
-            editor.OnGUI();
+            view.OnGUI();
             EndCheckResize();
+
+            if (InstanceManager.instances.isMovingInstances)
+            {
+                EditorGUI.DrawRect(new Rect(0, 0, position.width, position.height), overlay);
+                var size = GUI.skin.label.CalcSize(Content.movingInstances);
+                EditorGUI.LabelField(new Rect((position.width / 2) - (size.x / 2), (position.height / 2) - (size.y / 2), size.x, size.y), Content.movingInstances);
+            }
 
         }
 
-        #region Set instance
+        #region View
+
+        static UnityInstance instance;
+
+        static View m_view;
+        static View view => m_view ??= mainView;
+
+        static View mainView { get; } = new MainView();
+        static View instanceView { get; } = new InstanceView();
+        static View settingsView { get; } = new SettingsView();
+
+        public class View
+        {
+            public virtual void OnGUI() { }
+            public virtual void OnFocus() { }
+            public virtual void OnEnable() { }
+            public virtual void OnDisable() { }
+            public virtual Vector2? minSize { get; }
+            public Rect position => window.position;
+        }
+
+        static void SetView(View view)
+        {
+
+            view ??= mainView;
+
+            if (view == m_view)
+                return;
+
+            m_view?.OnDisable();
+            m_view = view;
+            m_view.OnEnable();
+
+        }
 
         static void ClearInstance() =>
             SetInstance(null);
 
+        static void CloseSettings() =>
+            SetInstance(null);
+
+        static void OpenSettings() =>
+            SetView(settingsView);
+
         static void SetInstance(string id)
         {
-
-            var prevEditor = window.editor;
 
             instance = !string.IsNullOrEmpty(id)
             ? InstanceManager.instances.Find(id)
             : null;
 
-            if (prevEditor != window.editor)
-            {
-                prevEditor.OnDisable();
-                window.editor.OnEnable();
-            }
+            SetView(instance is null ? mainView : instanceView);
 
         }
 
@@ -227,15 +275,6 @@ namespace InstanceManager.Editor
             prevPos = position;
 
         #endregion
-
-        public class InstanceEditor
-        {
-            public virtual void OnGUI() { }
-            public virtual void OnFocus() { }
-            public virtual void OnEnable() { }
-            public virtual void OnDisable() { }
-            public virtual Vector2? minSize { get; }
-        }
 
     }
 

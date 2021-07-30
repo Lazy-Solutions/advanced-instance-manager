@@ -3,7 +3,6 @@ using System.Diagnostics;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
-using Debug = UnityEngine.Debug;
 
 namespace InstanceManager.Editor
 {
@@ -11,7 +10,7 @@ namespace InstanceManager.Editor
     public partial class InstanceManagerWindow
     {
 
-        public class PrimaryInstance : InstanceEditor
+        public class MainView : View
         {
 
             public override Vector2? minSize => new Vector2(450, 350);
@@ -41,7 +40,6 @@ namespace InstanceManager.Editor
                 //then reset
                 if (!isScrollbarInitialized && Event.current.type == EventType.Repaint)
                 {
-                    Debug.Log("reset scroll");
                     var scroll = scrollPos;
                     scrollPos = new Vector2(0, float.MaxValue);
                     scrollPos = EditorGUILayout.BeginScrollView(scrollPos);
@@ -54,23 +52,12 @@ namespace InstanceManager.Editor
 
             }
 
-            public override void OnEnable()
-            {
-                //UpdateSymLinker();
-            }
-
-            public override void OnFocus()
-            {
-                //UpdateSymLinker();
-            }
-
             public override void OnGUI()
             {
 
-                var c = GUI.color;
-                GUI.color = listBackground;
-                GUI.DrawTexture(new Rect(0, 0, window.position.width, window.position.height), EditorGUIUtility.whiteTexture, ScaleMode.StretchToFill);
-                GUI.color = c;
+                GUIExt.BeginColorScope(listBackground);
+                GUI.DrawTexture(new Rect(0, 0, position.width, position.height), EditorGUIUtility.whiteTexture, ScaleMode.StretchToFill);
+                GUIExt.EndColorScope();
 
                 DrawInstanceRow("ID:", Content.status);
 
@@ -103,7 +90,7 @@ namespace InstanceManager.Editor
             void DrawInstanceRow(string id, GUIContent status, bool? openButtonValue = null, bool isEnabled = true, UnityInstance instance = null)
             {
 
-                GUI.enabled = isEnabled;
+                GUIExt.BeginEnabledScope(isEnabled);
 
                 EditorGUILayout.BeginHorizontal(Style.row);
                 EditorGUILayout.LabelField(id);
@@ -114,14 +101,13 @@ namespace InstanceManager.Editor
                 else if (GUILayout.Button(instance.isRunning ? Content.close : Content.open, GUILayout.ExpandWidth(false)))
                     instance.ToggleOpen();
 
-                var style = new GUIStyle(GUI.skin.button) { fontSize = 20, fixedWidth = 16, fixedHeight = 19 };
-                menuButtonPressed = openButtonValue.HasValue && GUILayout.Button("⋮", style, GUILayout.ExpandWidth(false));
+                menuButtonPressed = openButtonValue.HasValue && GUILayout.Button(Content.menu, Style.menu, GUILayout.ExpandWidth(false));
 
                 EditorGUILayout.EndHorizontal();
                 if (instance != null)
                     ContextMenu_Item(instance);
 
-                GUI.enabled = true;
+                GUIExt.EndEnabledScope();
 
             }
 
@@ -132,7 +118,7 @@ namespace InstanceManager.Editor
                 var rect = new Rect(0, GUILayoutUtility.GetLastRect().y + 73, window.position.width, 40);
                 var pos = new Vector2(Event.current.mousePosition.x, Event.current.mousePosition.y + 73);
 
-                if ((menuButtonPressed || Event.current.type == EventType.ContextClick) && rect.Contains(pos))
+                if (menuButtonPressed || (Event.current.type == EventType.ContextClick && rect.Contains(pos)))
                 {
 
                     var menu = new GenericMenu();
@@ -165,39 +151,8 @@ namespace InstanceManager.Editor
 
             }
 
-            //bool symLinkerHasAnUpdate;
-            //bool symLinkerInstalled;
-            //async void UpdateSymLinker()
-            //{
-            //    symLinkerHasAnUpdate = false;
-            //    symLinkerInstalled = SymLinkUtility.isAvailable;
-            //    symLinkerHasAnUpdate = false;
-            //    if (window) window.Repaint();
-            //    symLinkerHasAnUpdate = await SymLinkUtility.HasUpdate();
-            //    if (window) window.Repaint();
-            //}
-
             void DrawFooter()
             {
-
-                //if (symLinkerHasAnUpdate || !symLinkerInstalled)
-                //{
-
-                //    EditorGUILayout.BeginHorizontal();
-                //    var symLinkerUpdate = symLinkerInstalled ? Content.symLinkerUpdate : Content.symLinkerNotInstalled;
-                //    var size = EditorStyles.label.CalcSize(symLinkerUpdate);
-                //    EditorGUILayout.LabelField(symLinkerUpdate, GUILayout.Width(size.x));
-                //    GUILayout.FlexibleSpace();
-
-                //    if (GUILayout.Button(Content.github, GUILayout.ExpandWidth(false)))
-                //        Process.Start("https://github.com/Lazy-Solutions/InstanceManager.SymLinker");
-
-                //    if (GUILayout.Button(symLinkerInstalled ? Content.update : Content.install, GUILayout.ExpandWidth(false)))
-                //        SymLinkUtility.Update(onDone: UpdateSymLinker);
-
-                //    EditorGUILayout.EndHorizontal();
-
-                //}
 
                 var r = GUILayoutUtility.GetRect(Screen.width, 1);
 
@@ -212,7 +167,8 @@ namespace InstanceManager.Editor
                 EditorGUILayout.BeginHorizontal(Style.margin);
                 GUILayout.FlexibleSpace();
 
-                //GUI.enabled = symLinkerInstalled;
+                if (GUILayout.Button(Content.settings, GUILayout.Height(27)))
+                    OpenSettings();
 
                 if (GUILayout.Button(Content.createNewInstance, Style.createButton))
                 {
@@ -226,8 +182,6 @@ namespace InstanceManager.Editor
                     GUIUtility.ExitGUI();
 
                 }
-
-                //GUI.enabled = true;
 
                 EditorGUILayout.EndHorizontal();
 

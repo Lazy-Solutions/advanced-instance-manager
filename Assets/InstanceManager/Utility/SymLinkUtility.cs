@@ -1,12 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using UnityEditor;
-using Debug = UnityEngine.Debug;
 
 namespace InstanceManager.Utility
 {
@@ -24,38 +21,11 @@ namespace InstanceManager.Utility
             "EditorInstance.json"
         };
 
-        static Task RunCommand(string command) =>
-            Task.Run(() =>
-            {
-                var p = Process.Start(new ProcessStartInfo("cmd", "/c " + command) { CreateNoWindow = true });
-                p.WaitForExit();
-            });
-
-        static async void ProgressWrapper(string displayName, Task task, Action onComplete = null, string description = null)
-        {
-
-            var progress = Progress.Start(displayName, description, options: Progress.Options.Indefinite);
-
-            try
-            {
-                task.Start();
-                await task;
-            }
-            catch (Exception e)
-            {
-                Debug.LogError(e);
-            }
-
-            Progress.Remove(progress);
-            onComplete?.Invoke();
-
-        }
-
         /// <summary>Creates a new secondary instance.</summary>
         public static void Create(string projectPath, string targetPath, Action onComplete = null) =>
-            ProgressWrapper(
+           _ = ProgressUtility.RunTask(
                displayName: "Creating instance",
-               onComplete: onComplete,
+               onComplete: (t) => onComplete?.Invoke(),
                task: new Task(async () =>
                {
 
@@ -81,7 +51,7 @@ namespace InstanceManager.Utility
                        //Link all items in 'Library' folder, we need to do these individually since
                        //we need to avoid lock files and files causing conflicts
                        Directory.CreateDirectory(Path.Combine(targetPath, "Library"));
-                       foreach (var file in Directory.GetDirectories(Path.Combine(projectPath, "Library"), "*", SearchOption.TopDirectoryOnly))
+                       foreach (var file in Directory.GetFileSystemEntries(Path.Combine(projectPath, "Library"), "*", SearchOption.TopDirectoryOnly))
                        {
 
                            if (libraryBlacklist.Any(b => file.EndsWith(b)))
@@ -100,8 +70,8 @@ namespace InstanceManager.Utility
                        static Task SymLink(string path, string linkPath) =>
                            Task.Run(async () =>
                            {
-                               if (Directory.Exists(path))
-                                   await RunCommand($"mklink {(Directory.Exists(path) ? "/j" : "/h")} {linkPath} {path}");
+                               //if (Directory.Exists(path))
+                               await CommandUtility.RunCommand($"mklink {(Directory.Exists(path) ? "/j" : "/h")} {linkPath} {path}");
                            });
 
                    }
@@ -110,9 +80,9 @@ namespace InstanceManager.Utility
 
         /// <summary>Deletes a secondary instance from Unity Hub.</summary>
         public static void DeleteHubEntry(string instancePath, Action onComplete = null) =>
-            ProgressWrapper(
+            _ = ProgressUtility.RunTask(
                displayName: "Deleting hub entry",
-               onComplete: onComplete,
+               onComplete: (t) => onComplete?.Invoke(),
                task: new Task(() =>
                {
                    using var key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"SOFTWARE\Unity Technologies\Unity Editor 5.x", writable: true);
@@ -127,11 +97,11 @@ namespace InstanceManager.Utility
 
         /// <summary>Deletes a secondary instance.</summary>
         public static void Delete(string path, Action onComplete = null) =>
-            ProgressWrapper(
+            _ = ProgressUtility.RunTask(
                displayName: "Removing instance",
+               onComplete: (t) => onComplete?.Invoke(),
                //Deleting with cmd, which prevents 'Directory not empty error', for Directory.Delete(path, true)
-               task: new Task(() => RunCommand($"rmdir /s/q {path}")),
-               onComplete);
+               task: new Task(() => CommandUtility.RunCommand($"rmdir /s/q {path}")));
 
     }
 

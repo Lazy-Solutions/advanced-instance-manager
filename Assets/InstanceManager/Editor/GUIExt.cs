@@ -8,6 +8,8 @@ namespace InstanceManager.Editor
     public static class GUIExt
     {
 
+        #region ColorScope
+
         static Color? prevColor;
 
         /// <summary>
@@ -32,6 +34,39 @@ namespace InstanceManager.Editor
                 GUI.color = prevColor.Value;
             prevColor = null;
         }
+
+        #endregion
+        #region EnabledScope
+
+        static bool? prevEnabled;
+
+        /// <summary>
+        /// <para>Begins an enabled scope, this sets <see cref="GUI.enabled"/> and saves previous value, allowing it to be restored using <see cref="EndEnabledScope"/>.</para>
+        /// <para>See also <see cref="EndColorScope"/></para>
+        /// </summary>
+        public static void BeginEnabledScope(bool enabled, bool overrideWhenAlreadyFalse = false)
+        {
+
+            if (!GUI.enabled && !overrideWhenAlreadyFalse)
+                return;
+
+            if (prevEnabled.HasValue)
+                throw new Exception($"Cannot use {nameof(BeginEnabledScope)} before ending existing scope with {nameof(EndEnabledScope)}.");
+
+            prevEnabled = GUI.enabled;
+            GUI.enabled = enabled;
+
+        }
+
+        /// <summary>Ends the enabled scope, that was started with <see cref="BeginEnabledScope(bool)"/>.</summary>
+        public static void EndEnabledScope()
+        {
+            if (prevEnabled.HasValue)
+                GUI.enabled = prevEnabled.Value;
+            prevEnabled = null;
+        }
+
+        #endregion
 
         /// <summary>
         /// <para>Unfocuses elements when blank area of <see cref="UnityEditor.EditorWindow"/> clicked.</para>

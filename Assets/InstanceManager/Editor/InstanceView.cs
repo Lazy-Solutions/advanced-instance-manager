@@ -10,7 +10,7 @@ namespace InstanceManager.Editor
     public partial class InstanceManagerWindow
     {
 
-        public class SecondaryInstance : InstanceEditor
+        public class InstanceView : View
         {
 
             string[] layouts;
@@ -52,9 +52,8 @@ namespace InstanceManager.Editor
             public override void OnGUI()
             {
 
-                Header();
-
                 EditorGUILayout.BeginVertical(Style.secondaryInstanceMargin);
+                Header();
                 Layout();
                 Scenes();
                 AutoPlayMode();
@@ -210,28 +209,28 @@ namespace InstanceManager.Editor
                     RefreshScenes();
                 }
 
-                GUI.enabled = false;
+                GUIExt.BeginEnabledScope(false);
                 EditorGUILayout.ObjectField(scene.asset, typeof(SceneAsset), allowSceneObjects: false, GUILayout.Height(22));
-                GUI.enabled = true;
+                GUIExt.EndEnabledScope();
 
                 if (canReorder)
                 {
 
-                    GUI.enabled = scene.index > 0;
+                    GUIExt.BeginEnabledScope(scene.index > 0);
                     if (GUILayout.Button(Content.up, Style.moveSceneButton, GUILayout.ExpandWidth(false)))
                     {
                         instance.SetScene(scene.path, index: scene.index - 1);
                         RefreshScenes();
                     }
+                    GUIExt.EndEnabledScope();
 
-                    GUI.enabled = scene.index < instance.scenes?.Length - 1;
+                    GUIExt.BeginEnabledScope(scene.index < instance.scenes?.Length - 1);
                     if (GUILayout.Button(Content.down, Style.moveSceneButton, GUILayout.ExpandWidth(false)))
                     {
                         instance.SetScene(scene.path, index: scene.index + 1);
                         RefreshScenes();
                     }
-
-                    GUI.enabled = true;
+                    GUIExt.EndEnabledScope();
 
                 }
 
