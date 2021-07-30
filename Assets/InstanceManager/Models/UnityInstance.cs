@@ -267,7 +267,7 @@ namespace InstanceManager.Models
         void OnClosed()
         {
 
-            SymLinkUtility.DeleteHubEntry("Deleting unity hub entry", path);
+            SymLinkUtility.DeleteHubEntry(path);
 
             InstanceManager.instances.Save();
             if (InstanceManagerWindow.window)

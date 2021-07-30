@@ -1,5 +1,4 @@
 ﻿using InstanceManager.Models;
-using InstanceManager.Utility;
 using System.Diagnostics;
 using System.Linq;
 using UnityEditor;
@@ -57,12 +56,12 @@ namespace InstanceManager.Editor
 
             public override void OnEnable()
             {
-                UpdateSymLinker();
+                //UpdateSymLinker();
             }
 
             public override void OnFocus()
             {
-                UpdateSymLinker();
+                //UpdateSymLinker();
             }
 
             public override void OnGUI()
@@ -166,39 +165,39 @@ namespace InstanceManager.Editor
 
             }
 
-            bool symLinkerHasAnUpdate;
-            bool symLinkerInstalled;
-            async void UpdateSymLinker()
-            {
-                symLinkerHasAnUpdate = false;
-                symLinkerInstalled = SymLinkUtility.isAvailable;
-                symLinkerHasAnUpdate = false;
-                if (window) window.Repaint();
-                symLinkerHasAnUpdate = await SymLinkUtility.HasUpdate();
-                if (window) window.Repaint();
-            }
+            //bool symLinkerHasAnUpdate;
+            //bool symLinkerInstalled;
+            //async void UpdateSymLinker()
+            //{
+            //    symLinkerHasAnUpdate = false;
+            //    symLinkerInstalled = SymLinkUtility.isAvailable;
+            //    symLinkerHasAnUpdate = false;
+            //    if (window) window.Repaint();
+            //    symLinkerHasAnUpdate = await SymLinkUtility.HasUpdate();
+            //    if (window) window.Repaint();
+            //}
 
             void DrawFooter()
             {
 
-                if (symLinkerHasAnUpdate || !symLinkerInstalled)
-                {
+                //if (symLinkerHasAnUpdate || !symLinkerInstalled)
+                //{
 
-                    EditorGUILayout.BeginHorizontal();
-                    var symLinkerUpdate = symLinkerInstalled ? Content.symLinkerUpdate : Content.symLinkerNotInstalled;
-                    var size = EditorStyles.label.CalcSize(symLinkerUpdate);
-                    EditorGUILayout.LabelField(symLinkerUpdate, GUILayout.Width(size.x));
-                    GUILayout.FlexibleSpace();
+                //    EditorGUILayout.BeginHorizontal();
+                //    var symLinkerUpdate = symLinkerInstalled ? Content.symLinkerUpdate : Content.symLinkerNotInstalled;
+                //    var size = EditorStyles.label.CalcSize(symLinkerUpdate);
+                //    EditorGUILayout.LabelField(symLinkerUpdate, GUILayout.Width(size.x));
+                //    GUILayout.FlexibleSpace();
 
-                    if (GUILayout.Button(Content.github, GUILayout.ExpandWidth(false)))
-                        Process.Start("https://github.com/Lazy-Solutions/InstanceManager.SymLinker");
+                //    if (GUILayout.Button(Content.github, GUILayout.ExpandWidth(false)))
+                //        Process.Start("https://github.com/Lazy-Solutions/InstanceManager.SymLinker");
 
-                    if (GUILayout.Button(symLinkerInstalled ? Content.update : Content.install, GUILayout.ExpandWidth(false)))
-                        SymLinkUtility.Update(onDone: UpdateSymLinker);
+                //    if (GUILayout.Button(symLinkerInstalled ? Content.update : Content.install, GUILayout.ExpandWidth(false)))
+                //        SymLinkUtility.Update(onDone: UpdateSymLinker);
 
-                    EditorGUILayout.EndHorizontal();
+                //    EditorGUILayout.EndHorizontal();
 
-                }
+                //}
 
                 var r = GUILayoutUtility.GetRect(Screen.width, 1);
 
@@ -213,7 +212,7 @@ namespace InstanceManager.Editor
                 EditorGUILayout.BeginHorizontal(Style.margin);
                 GUILayout.FlexibleSpace();
 
-                GUI.enabled = symLinkerInstalled;
+                //GUI.enabled = symLinkerInstalled;
 
                 if (GUILayout.Button(Content.createNewInstance, Style.createButton))
                 {
@@ -228,7 +227,7 @@ namespace InstanceManager.Editor
 
                 }
 
-                GUI.enabled = true;
+                //GUI.enabled = true;
 
                 EditorGUILayout.EndHorizontal();
 

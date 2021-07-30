@@ -71,9 +71,6 @@ namespace InstanceManager.Utility
         public UnityInstance Create(Action onComplete = null)
         {
 
-            if (!SymLinkUtility.CheckAvailable())
-                return null;
-
             var id = IDUtility.Generate(validate: id => !Directory.Exists(Paths.InstancePath(id)));
             var path = Paths.InstancePath(id);
             var instance = new UnityInstance(id, path)
@@ -81,7 +78,7 @@ namespace InstanceManager.Utility
                 isSettingUp = true
             };
 
-            SymLinkUtility.Create("Creating new instance", Paths.project.WithQuotes(), path.WithQuotes(),
+            SymLinkUtility.Create(Paths.project, path,
                  onComplete: () =>
                  {
                      instance.isSettingUp = false;
@@ -104,7 +101,7 @@ namespace InstanceManager.Utility
 
             instance.isSettingUp = true;
 
-            SymLinkUtility.Delete(progressString: "Deleting instance", instance.path,
+            SymLinkUtility.Delete(instance.path,
                 onComplete: () =>
                 {
                     list.Remove(instance);
