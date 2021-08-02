@@ -41,37 +41,10 @@ namespace InstanceManager
         /// <summary>Gets if the current instance is a secondary instance.</summary>
         public static bool isSecondInstance { get; private set; }
 
-        /// <summary>Gets the id of the current instance. <see langword="null"/> if primary.</summary>
+        /// <summary>Gets the id of the current instance.</summary>
         public static string id { get; private set; }
 
-        [InitializeOnLoadMethod]
-        static void OnLoad()
-        {
-
-            id = Directory.GetParent(Application.dataPath).Name;
-            var isEmbedded = Application.dataPath.Contains("/EmbeddedInstances/" + id);
-
-            isSecondInstance = isEmbedded;
-            isPrimaryInstance = !isSecondInstance;
-
-            instances = new InstanceCollection();
-            instances.Reload();
-            instance = instances.Find(id);
-
-            SetupCrossProcessEvents(isPrimaryInstance);
-
-            if (isEmbedded && instance is null)
-            {
-                Debug.LogError("This instance is embedded, but no associated instance metadata could be found, Instance Manager initialization has been stopped.");
-                return;
-            }
-
-            if (isPrimaryInstance)
-                InitializePrimaryInstance();
-            else
-                InitializeSecondInstance();
-
-        }
+        #region Events
 
         public static CrossProcessEvent OnHostEnterPlayMode { get; } = new CrossProcessEvent(nameof(OnHostEnterPlayMode));
         public static CrossProcessEvent OnHostExitPlayMode { get; } = new CrossProcessEvent(nameof(OnHostExitPlayMode));
@@ -143,6 +116,46 @@ namespace InstanceManager
 
         }
 
+        #endregion
+
+        [InitializeOnLoadMethod]
+        static void OnLoad()
+        {
+
+            id = Directory.GetParent(Application.dataPath).Name;
+            var isEmbedded = Application.dataPath.Contains("/EmbeddedInstances/" + id);
+
+            isSecondInstance = isEmbedded;
+            isPrimaryInstance = !isSecondInstance;
+
+            if (isPrimaryInstance)
+            {
+                id = EditorPrefs.GetString("InstanceManager.PrimaryID", null);
+                if (string.IsNullOrWhiteSpace(id))
+                    EditorPrefs.SetString("InstanceManager.PrimaryID", id = IDUtility.Generate());
+            }
+
+            Debug.Log(id);
+
+            instances = new InstanceCollection();
+            instances.Reload();
+            instance = instances.Find(id);
+
+            SetupCrossProcessEvents(isPrimaryInstance);
+
+            if (isEmbedded && instance is null)
+            {
+                Debug.LogError("This instance is embedded, but no associated instance metadata could be found, Instance Manager initialization has been stopped.");
+                return;
+            }
+
+            if (isPrimaryInstance)
+                InitializePrimaryInstance();
+            else
+                InitializeSecondInstance();
+
+        }
+
         static void InitializePrimaryInstance()
         {
 
@@ -159,8 +172,6 @@ namespace InstanceManager
 
         static async void InitializeSecondInstance()
         {
-
-            Debug.Log(id);
 
             await Task.Delay(100);
             WindowLayoutUtility.Find(instance.preferredLayout).Apply();

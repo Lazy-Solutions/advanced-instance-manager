@@ -14,10 +14,9 @@ namespace InstanceManager.Editor
         {
 
             string instancesPath;
-            string pathSuffix => Path.Combine("\\Instance Manager", "545sdad");
             public override void OnEnable()
             {
-                instancesPath = Paths.instancesPath.Replace(pathSuffix, "");
+                instancesPath = Paths.instancesPath.Replace(Paths.instancesPathSuffix, "").TrimEnd('/');
             }
 
             public override void OnGUI()
@@ -57,15 +56,17 @@ namespace InstanceManager.Editor
 
                 instancesPath = GUILayout.TextField(instancesPath);
                 GUIExt.BeginColorScope(new Color(1, 1, 1, 0.5f));
-                var c = new GUIContent(pathSuffix);
+                var c = new GUIContent("/" + Paths.instancesPathSuffix);
                 var size = EditorStyles.label.CalcSize(c);
                 EditorGUILayout.LabelField(c, GUILayout.Width(size.x));
                 GUIExt.EndColorScope();
-                GUILayout.Button(EditorGUIUtility.IconContent("d_Folder Icon"), new GUIStyle(GUI.skin.button) { padding = new RectOffset(2, 2, 2, 2), fixedWidth = 18, fixedHeight = 18 });
+
+                if (GUILayout.Button(EditorGUIUtility.IconContent("d_Folder Icon"), new GUIStyle(GUI.skin.button) { padding = new RectOffset(2, 2, 2, 2), fixedWidth = 18, fixedHeight = 18 }))
+                    PickFolder();
 
                 EditorGUILayout.EndHorizontal();
 
-                var fullPath = instancesPath + pathSuffix;
+                var fullPath = Path.Combine(instancesPath, Paths.instancesPathSuffix).Replace('\\', '/');
                 EditorGUILayout.BeginHorizontal();
 
                 GUILayout.FlexibleSpace();
@@ -76,13 +77,30 @@ namespace InstanceManager.Editor
 
                 GUIExt.BeginEnabledScope(fullPath != Paths.instancesPath);
                 if (EditorGUILayout.LinkButton("Apply"))
-                    InstanceManager.instances.MoveInstancesPath(fullPath);
+                {
+                    Directory.CreateDirectory(fullPath);
+                    InstanceManager.instances.MoveInstancesPath(fullPath, onComplete: () =>
+                    {
+                        window.Repaint();
+                        OnEnable();
+                    });
+                    GUIUtility.ExitGUI();
+                }
                 GUIExt.EndEnabledScope();
 
                 EditorGUILayout.EndHorizontal();
-
                 EditorGUILayout.EndVertical();
 
+            }
+
+            void PickFolder()
+            {
+                var result = EditorUtility.OpenFolderPanel("Pick folder", instancesPath.Replace(Paths.instancesPathSuffix, ""), "");
+                if (Directory.Exists(result))
+                {
+                    result = result.Replace("Instance Manager", "").Replace(InstanceManager.id, "").Replace('\\', '/').Trim('/');
+                    instancesPath = result;
+                }
             }
 
         }

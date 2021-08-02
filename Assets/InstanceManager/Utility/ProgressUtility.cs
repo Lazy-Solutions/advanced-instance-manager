@@ -2,7 +2,6 @@
 using System.Diagnostics;
 using System.Threading.Tasks;
 using UnityEditor;
-using Debug = UnityEngine.Debug;
 
 namespace InstanceManager.Utility
 {
@@ -34,7 +33,7 @@ namespace InstanceManager.Utility
             }
             catch (Exception e)
             {
-                Debug.LogError(e);
+                UnityEngine.Debug.LogError(e);
             }
 
             EditorApplication.delayCall += () => onComplete?.Invoke(task);

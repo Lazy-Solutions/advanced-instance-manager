@@ -127,30 +127,56 @@ namespace InstanceManager.Utility
         public bool isMovingInstances { get; private set; }
 
         /// <summary>Moves the instances to a new path. Folder must exist before calling this method and all instances must be closed.</summary>
-        public Task MoveInstancesPath(string newPath) =>
-            MoveInstancesPath(Paths.instancesPath, newPath);
+        public Task MoveInstancesPath(string newPath, Action onComplete = null) =>
+            MoveInstancesPath(Paths.instancesPath, newPath, onComplete);
 
-        Task MoveInstancesPath(string currentPath, string newPath) =>
+#pragma warning disable CS0612 // Type or member is obsolete
+        Task MoveInstancesPath(string currentPath, string newPath, Action onComplete = null) =>
             ProgressUtility.RunTask(
                 displayName: "Moving instances",
                 canRun: !isMovingInstances && Directory.Exists(newPath) && currentPath != newPath,
-                onComplete: (t) => { if (!t.IsFaulted) Paths.instancesPath = newPath; },
+                onComplete: (t) => { if (!t.IsFaulted) Paths.instancesPath = newPath; isMovingInstances = false; onComplete?.Invoke(); },
                 task: new Task(() =>
                 {
-                    return;
+
+                    if (!Directory.Exists(currentPath))
+                        return; //Nothing to move, but we need to set Paths.instancesPath (which is set above in onComplete:)
+
                     if (InstanceManager.instances.Any(i => i.isRunning))
                         throw new Exception("All instances must be closed before moving instances path!");
 
                     isMovingInstances = true;
 
-                    currentPath = @"G:\Github\Unity.InstanceManager\EmbeddedInstances\New folder";
-
                     Directory.Delete(newPath);
                     Directory.Move(currentPath, newPath);
+
+                    var deletePath = currentPath.Replace(Paths.instancesPathSuffix, "");
+                    if (!newPath.Contains(deletePath) && CanDelete(deletePath))
+                        Directory.Delete(currentPath.Replace(Paths.instancesPathSuffix, ""), true);
+                    else
+                        Directory.Delete(currentPath.Replace(InstanceManager.id, ""));
+                    Debug.Log("Is empty: " + CanDelete(deletePath));
 
                     isMovingInstances = false;
 
                 }));
+#pragma warning restore CS0612 // Type or member is obsolete
+
+        static bool CanDelete(string folder)
+        {
+            try
+            {
+                return Directory.Exists(folder) &&
+                    !Directory.GetFileSystemEntries(folder, "*", SearchOption.AllDirectories).Select(f => Path.GetFileName(f)).
+                    Except(new[] { "Instance Manager", InstanceManager.id }).
+                    Any();
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return false;
+            }
+        }
+
 
     }
 

@@ -1,4 +1,5 @@
 ﻿using System;
+using UnityEditor;
 using UnityEngine;
 
 namespace InstanceManager.Editor
@@ -7,6 +8,12 @@ namespace InstanceManager.Editor
     /// <summary>Contains a few extra gui functions.</summary>
     public static class GUIExt
     {
+
+        static void Update()
+        {
+            prevEnabled = null;
+            prevColor = null;
+        }
 
         #region ColorScope
 
@@ -18,6 +25,9 @@ namespace InstanceManager.Editor
         /// </summary>
         public static void BeginColorScope(Color color)
         {
+
+            EditorApplication.update -= Update;
+            EditorApplication.update += Update;
 
             if (prevColor.HasValue)
                 throw new Exception($"Cannot use {nameof(BeginColorScope)} before ending existing scope with {nameof(EndColorScope)}.");
@@ -46,6 +56,9 @@ namespace InstanceManager.Editor
         /// </summary>
         public static void BeginEnabledScope(bool enabled, bool overrideWhenAlreadyFalse = false)
         {
+
+            EditorApplication.update -= Update;
+            EditorApplication.update += Update;
 
             if (!GUI.enabled && !overrideWhenAlreadyFalse)
                 return;
