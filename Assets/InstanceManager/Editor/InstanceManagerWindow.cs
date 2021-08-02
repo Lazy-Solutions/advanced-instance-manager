@@ -179,7 +179,7 @@ namespace InstanceManager.Editor
                 SetView(mainView);
                 GUI.enabled = false;
             }
-            SetView(settingsView);
+            //SetView(settingsView);
 
             if (GUIExt.UnfocusOnClick())
                 Repaint();
