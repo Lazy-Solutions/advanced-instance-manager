@@ -19,14 +19,12 @@ namespace InstanceManager.Models
         public UnityInstance()
         { }
 
-        public UnityInstance(string id, string path)
+        public UnityInstance(string id)
         {
             m_ID = id;
-            m_path = path;
         }
 
         [SerializeField] private string m_ID;
-        [SerializeField] private string m_path;
         [SerializeField] private int m_processID;
         [SerializeField] private string m_preferredLayout = "Default";
         [SerializeField] private bool m_autoSync = true;
@@ -34,6 +32,12 @@ namespace InstanceManager.Models
         [SerializeField] private string[] m_scenes;
 
         public static event Action autoSyncChanged;
+
+        public bool needsRepair => GetsNeedsRepair();
+
+        bool? m_needsRepair;
+        bool GetsNeedsRepair() =>
+            m_needsRepair ??= SymLinkUtility.NeedsRepair(this);
 
         /// <summary>Gets or sets the window layout.</summary>
         public string preferredLayout
@@ -83,7 +87,7 @@ namespace InstanceManager.Models
         public string id => m_ID;
 
         /// <summary>Gets the path of this instance.</summary>
-        public string path => m_path;
+        public string path => Paths.InstancePath(id);
 
         /// <summary>Gets if the instance is currently being set up.</summary>
         public bool isSettingUp { get; internal set; }
@@ -162,7 +166,7 @@ namespace InstanceManager.Models
         public void Open()
         {
 
-            if (InstanceManager.isSecondInstance || isRunning)
+            if (InstanceManager.isSecondInstance || isRunning || needsRepair)
                 return;
 
             SetupScenes();
@@ -209,6 +213,9 @@ namespace InstanceManager.Models
             //Debug.Log("exited");
             OnClosed();
         }
+
+        public void Close() =>
+            Close(null);
 
         public void Close(Action onClosed = null)
         {

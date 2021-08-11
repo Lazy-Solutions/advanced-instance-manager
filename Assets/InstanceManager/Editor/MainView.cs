@@ -1,4 +1,5 @@
 ﻿using InstanceManager.Models;
+using InstanceManager.Utility;
 using System.Diagnostics;
 using System.Linq;
 using UnityEditor;
@@ -98,6 +99,11 @@ namespace InstanceManager.Editor
 
                 if (!openButtonValue.HasValue)
                     GUILayout.Label(Content.emptyString, GUILayout.ExpandWidth(false));
+                else if (instance.needsRepair)
+                {
+                    if (GUILayout.Button(Content.repair, GUILayout.ExpandWidth(false)))
+                        SymLinkUtility.Repair(instance, instance.path, onComplete: () => { InstanceManager.instances.Reload(); window.Repaint(); });
+                }
                 else if (GUILayout.Button(instance.isRunning ? Content.close : Content.open, GUILayout.ExpandWidth(false)))
                     instance.ToggleOpen();
 
@@ -124,24 +130,17 @@ namespace InstanceManager.Editor
                     var menu = new GenericMenu();
 
                     if (instance.isRunning)
-                        menu.AddItem(Content.close, false, () => instance.Close());
+                        menu.AddItem(Content.close, instance.Close, enabled: !instance.needsRepair);
                     else
-                        menu.AddItem(Content.open, false, () => instance.Open());
+                        menu.AddItem(Content.open, instance.Open, enabled: !instance.needsRepair);
 
                     menu.AddSeparator(string.Empty);
-                    menu.AddItem(Content.showInExplorer, false, () => Process.Start("explorer", instance.path));
+                    menu.AddItem(Content.showInExplorer, false, () =>
+                        Process.Start("explorer", instance.path.ToWindowsPath().WithQuotes()));
 
-                    if (instance.isRunning)
-                        menu.AddDisabledItem(Content.options);
-                    else
-                        menu.AddItem(Content.options, false, () => SetInstance(instance.id));
-
+                    menu.AddItem(Content.open, () => SetInstance(instance.id), enabled: instance.isRunning);
                     menu.AddSeparator(string.Empty);
-
-                    if (instance.isRunning)
-                        menu.AddDisabledItem(Content.delete);
-                    else
-                        menu.AddItem(Content.delete, false, () => Remove(instance));
+                    menu.AddItem(Content.delete, () => Remove(instance), enabled: !instance.isRunning);
 
                     menu.ShowAsContext();
 
@@ -167,8 +166,8 @@ namespace InstanceManager.Editor
                 EditorGUILayout.BeginHorizontal(Style.margin);
                 GUILayout.FlexibleSpace();
 
-                if (GUILayout.Button(Content.settings, GUILayout.Height(27)))
-                    OpenSettings();
+                //if (GUILayout.Button(Content.settings, GUILayout.Height(27)))
+                //    OpenSettings();
 
                 if (GUILayout.Button(Content.createNewInstance, Style.createButton))
                 {

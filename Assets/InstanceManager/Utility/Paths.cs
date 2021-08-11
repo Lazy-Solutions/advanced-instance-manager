@@ -11,7 +11,7 @@ namespace InstanceManager.Utility
     {
 
         /// <summary>The path to the project, outside of Assets folder.</summary>
-        public static string project => new DirectoryInfo(Application.dataPath).Parent.FullName;
+        public static string project { get; } = new DirectoryInfo(Application.dataPath).Parent.FullName;
 
         /// <summary>Gets 'Instance Manager\{id}'.</summary>
         public static string instancesPathSuffix => Path.Combine("Instance Manager", InstanceManager.id).Replace("\\", "/");
@@ -31,7 +31,7 @@ namespace InstanceManager.Utility
         public static string listPath => Path.Combine(instancesPath, "lists.json");
 
         /// <summary>Gets the path to the specified secondary instance.</summary>
-        public static string InstancePath(string listID) => Path.Combine(instancesPath, listID);
+        public static string InstancePath(string listID) => instancesPath + "/" + listID;
 
     }
 

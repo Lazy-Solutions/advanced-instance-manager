@@ -18,10 +18,9 @@ namespace InstanceManager
         //TODO: Something is wrong which causes local multiplayer to not assign correct ids to each instance
         //TODO: Check out: https://github.com/VeriorPies/ParrelSync/tree/95a062cb14e669c7834094366611765d3a9658d6
 
+        //TODO: Remove support for moving instances, keep folder in local app data
         //TODO: Cannot get current window layout anymore
-        //TODO: Move instances to outside of project folder, make instance paths relative to folder setting
-
-        //TODO: Verify folder (check if folders exists)
+        //TODO: Fix auto sync
 
         //TODO: After release:
         //TODO: Add multi-platform support

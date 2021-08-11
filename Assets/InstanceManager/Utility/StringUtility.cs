@@ -13,6 +13,14 @@
             return str;
         }
 
+        /// <summary>Replaces all instances of '\' in the string to '/'.</summary>
+        public static string ToCrossPlatformPath(this string str) =>
+            str.Replace('\\', '/');
+
+        /// <summary>Replaces all instances of '/' in the string to '\'.</summary>
+        public static string ToWindowsPath(this string str) =>
+            str.Replace('/', '\\');
+
     }
 
 }

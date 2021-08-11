@@ -16,15 +16,21 @@ namespace InstanceManager.Utility
         /// <param name="description">The description for the progress item.</param>
         /// <param name="minDisplayTime">The minimum display time of the progress bar, makes sure that the progress is displayed and readable, instead of just flickering.</param>
         /// <param name="canRun">Prevents the task from running and does not create a progress item if false.</param>
-        public static async Task RunTask(string displayName, Task task, Action<Task> onComplete = null, string description = null, int minDisplayTime = 250, bool canRun = true)
+        public static async Task RunTask(string displayName, Task task, Action<Task> onComplete = null, string description = null, int minDisplayTime = 250, bool canRun = true, bool hideProgress = false)
         {
 
             if (!canRun)
                 return;
 
-            var progress = Progress.Start(displayName, description, options: Progress.Options.Indefinite);
-            var watch = new Stopwatch();
-            watch.Start();
+            Stopwatch watch = null;
+            int? progress = null;
+
+            if (!hideProgress)
+            {
+                progress = Progress.Start(displayName, description, options: Progress.Options.Indefinite);
+                watch = new Stopwatch();
+                watch.Start();
+            }
 
             try
             {
@@ -38,11 +44,14 @@ namespace InstanceManager.Utility
 
             EditorApplication.delayCall += () => onComplete?.Invoke(task);
 
-            watch.Stop();
-            //Make sure that progress is actually readable, rather than just a flicker
-            if (watch.ElapsedMilliseconds < minDisplayTime)
-                await Task.Delay(TimeSpan.FromMilliseconds(minDisplayTime - watch.ElapsedMilliseconds));
-            Progress.Remove(progress);
+            if (!hideProgress)
+            {
+                watch?.Stop();
+                //Make sure that progress is actually readable, rather than just a flicker
+                if (watch.ElapsedMilliseconds < minDisplayTime)
+                    await Task.Delay(TimeSpan.FromMilliseconds(minDisplayTime - watch?.ElapsedMilliseconds ?? 0));
+                if (progress.HasValue) Progress.Remove(progress.Value);
+            }
 
         }
 

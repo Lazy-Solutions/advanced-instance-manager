@@ -4,14 +4,17 @@ using System.Threading.Tasks;
 namespace InstanceManager.Utility
 {
 
+    /// <summary>An utility class for running commands in the system terminal.</summary>
     public static class CommandUtility
     {
 
-        public static Task RunCommand(string command) =>
+        /// <summary>Runs the command in the system terminal.</summary>
+        public static Task<int> RunCommand(string command, bool closeWindowWhenDone = true) =>
             Task.Run(() =>
             {
-                var p = Process.Start(new ProcessStartInfo("cmd", "/c " + command) { WindowStyle = ProcessWindowStyle.Hidden });
+                var p = Process.Start(new ProcessStartInfo("cmd", (closeWindowWhenDone ? "/c" : "/k ") + command) { UseShellExecute = true });
                 p.WaitForExit();
+                return p.ExitCode;
             });
 
     }

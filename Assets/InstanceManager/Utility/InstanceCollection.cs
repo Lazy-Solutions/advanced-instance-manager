@@ -43,6 +43,7 @@ namespace InstanceManager.Utility
         public void Save()
         {
             var json = JsonUtility.ToJson(this);
+            Directory.GetParent(Paths.listPath).Create();
             File.WriteAllText(Paths.listPath, json);
         }
 
@@ -74,7 +75,7 @@ namespace InstanceManager.Utility
 
             var id = IDUtility.Generate(validate: id => !Directory.Exists(Paths.InstancePath(id)));
             var path = Paths.InstancePath(id);
-            var instance = new UnityInstance(id, path)
+            var instance = new UnityInstance(id)
             {
                 isSettingUp = true
             };
@@ -135,31 +136,30 @@ namespace InstanceManager.Utility
             ProgressUtility.RunTask(
                 displayName: "Moving instances",
                 canRun: !isMovingInstances && Directory.Exists(newPath) && currentPath != newPath,
-                onComplete: (t) => { if (!t.IsFaulted) Paths.instancesPath = newPath; isMovingInstances = false; onComplete?.Invoke(); },
-                task: new Task(() =>
-                {
+                onComplete: (t) => { if (!t.IsFaulted) Paths.instancesPath = newPath; isMovingInstances = false; Save(); onComplete?.Invoke(); },
+                task: new Task(async () =>
+               {
 
-                    if (!Directory.Exists(currentPath))
-                        return; //Nothing to move, but we need to set Paths.instancesPath (which is set above in onComplete:)
+                   if (!Directory.Exists(currentPath))
+                       return; //Nothing to move, but we need to set Paths.instancesPath (which is set above in onComplete:)
 
-                    if (InstanceManager.instances.Any(i => i.isRunning))
-                        throw new Exception("All instances must be closed before moving instances path!");
+                   if (InstanceManager.instances.Any(i => i.isRunning))
+                       throw new Exception("All instances must be closed before moving instances path!");
 
-                    isMovingInstances = true;
+                   isMovingInstances = true;
 
-                    Directory.Delete(newPath);
-                    Directory.Move(currentPath, newPath);
+                   await CommandUtility.RunCommand("rmdir /s/q " + newPath.ToWindowsPath().WithQuotes());
+                   await CommandUtility.RunCommand($"move {currentPath.ToWindowsPath().WithQuotes()} {newPath.ToWindowsPath().WithQuotes()}");
 
-                    var deletePath = currentPath.Replace(Paths.instancesPathSuffix, "");
-                    if (!newPath.Contains(deletePath) && CanDelete(deletePath))
-                        Directory.Delete(currentPath.Replace(Paths.instancesPathSuffix, ""), true);
-                    else
-                        Directory.Delete(currentPath.Replace(InstanceManager.id, ""));
-                    Debug.Log("Is empty: " + CanDelete(deletePath));
+                   var deletePath = currentPath.Replace(Paths.instancesPathSuffix, "");
+                   if (!newPath.Contains(deletePath) && CanDelete(deletePath))
+                       await CommandUtility.RunCommand("rmdir /s/q " + currentPath.Replace(Paths.instancesPathSuffix, "").ToWindowsPath().WithQuotes());
+                   else
+                       await CommandUtility.RunCommand("rmdir /s/q " + currentPath.Replace(InstanceManager.id, "").ToWindowsPath().WithQuotes());
 
-                    isMovingInstances = false;
+                   isMovingInstances = false;
 
-                }));
+               }));
 #pragma warning restore CS0612 // Type or member is obsolete
 
         static bool CanDelete(string folder)

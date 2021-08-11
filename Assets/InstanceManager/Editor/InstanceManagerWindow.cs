@@ -35,6 +35,9 @@ namespace InstanceManager.Editor
 
             public static GUIStyle menu { get; private set; }
 
+            public static GUIStyle header { get; private set; }
+            public static GUIStyle folder { get; private set; }
+
             public static void Initialize()
             {
 
@@ -54,6 +57,9 @@ namespace InstanceManager.Editor
 
                 moveSceneButton ??= new GUIStyle(GUI.skin.button) { fontSize = 18, fixedWidth = 21, fixedHeight = 21, padding = new RectOffset(2, 0, 0, 0) };
                 menu ??= new GUIStyle(GUI.skin.button) { fontSize = 20, fixedWidth = 16, fixedHeight = 19 };
+
+                header ??= new GUIStyle(EditorStyles.label) { fontSize = 20, fixedHeight = 24, padding = new RectOffset(2, 0, -4, 0) };
+                folder = new GUIStyle(GUI.skin.button) { padding = new RectOffset(2, 2, 2, 2), fixedWidth = 18, fixedHeight = 18 };
 
             }
 
@@ -86,6 +92,7 @@ namespace InstanceManager.Editor
             public static GUIContent reload { get; private set; }
             public static GUIContent autoSync { get; private set; }
             public static GUIContent apply { get; private set; }
+            public static GUIContent Apply { get; private set; }
             public static GUIContent autoPlayMode { get; private set; }
 
             public static GUIContent scenesToOpen { get; private set; }
@@ -97,6 +104,11 @@ namespace InstanceManager.Editor
             public static GUIContent movingInstances { get; private set; }
             public static GUIContent menu { get; private set; }
             public static GUIContent settings { get; private set; }
+
+            public static GUIContent settingsText { get; private set; }
+            public static GUIContent instancesPath { get; private set; }
+            public static GUIContent folder { get; private set; }
+            public static GUIContent repair { get; private set; }
 
             public static void Initialize()
             {
@@ -125,6 +137,7 @@ namespace InstanceManager.Editor
                 reload ??= new GUIContent("↻", "Sync with primary instance");
                 autoSync ??= new GUIContent("Auto sync:");
                 apply ??= new GUIContent("apply");
+                Apply ??= new GUIContent("Apply");
                 autoPlayMode ??= new GUIContent("Automatically enter / exit play mode: ");
 
                 scenesToOpen ??= new GUIContent("Scenes to open:");
@@ -135,7 +148,13 @@ namespace InstanceManager.Editor
 
                 movingInstances ??= new GUIContent("Moving instances...");
                 menu ??= new GUIContent("⋮");
-                settings ??= EditorGUIUtility.IconContent("d_Preset.Context", "Settings");
+                settings ??= new GUIContent(EditorGUIUtility.IconContent("d_Preset.Context").image, "Settings");
+
+                settingsText ??= new GUIContent("Settings");
+                instancesPath ??= new GUIContent("Instances path:");
+                folder ??= new GUIContent(EditorGUIUtility.IconContent("d_Folder Icon").image, "Pick folder");
+
+                repair ??= new GUIContent("Repair");
 
             }
 
@@ -147,6 +166,7 @@ namespace InstanceManager.Editor
         {
             InstanceManager.instances.Reload();
             view.OnFocus();
+            Repaint();
         }
 
         void OnEnable()
@@ -160,6 +180,7 @@ namespace InstanceManager.Editor
                 SetInstance(InstanceManager.id);
 
             view.OnEnable();
+            Repaint();
 
         }
 
@@ -179,7 +200,6 @@ namespace InstanceManager.Editor
                 SetView(mainView);
                 GUI.enabled = false;
             }
-            //SetView(settingsView);
 
             if (GUIExt.UnfocusOnClick())
                 Repaint();

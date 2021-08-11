@@ -1,4 +1,5 @@
-﻿using System;
+﻿using InstanceManager.Models;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -22,10 +23,11 @@ namespace InstanceManager.Utility
         };
 
         /// <summary>Creates a new secondary instance.</summary>
-        public static void Create(string projectPath, string targetPath, Action onComplete = null) =>
-           _ = ProgressUtility.RunTask(
+        public static Task Create(string projectPath, string targetPath, Action onComplete = null, bool hideProgress = false) =>
+           ProgressUtility.RunTask(
                displayName: "Creating instance",
                onComplete: (t) => onComplete?.Invoke(),
+               hideProgress: hideProgress,
                task: new Task(async () =>
                {
 
@@ -71,7 +73,7 @@ namespace InstanceManager.Utility
                            Task.Run(async () =>
                            {
                                //if (Directory.Exists(path))
-                               await CommandUtility.RunCommand($"mklink {(Directory.Exists(path) ? "/j" : "/h")} {linkPath} {path}");
+                               await CommandUtility.RunCommand($"mklink {(Directory.Exists(path) ? "/j" : "/h")} {linkPath.ToWindowsPath().WithQuotes()} {path.ToWindowsPath().WithQuotes()}", closeWindowWhenDone: false);
                            });
 
                    }
@@ -79,29 +81,54 @@ namespace InstanceManager.Utility
                }));
 
         /// <summary>Deletes a secondary instance from Unity Hub.</summary>
-        public static void DeleteHubEntry(string instancePath, Action onComplete = null) =>
-            _ = ProgressUtility.RunTask(
+        public static Task DeleteHubEntry(string instancePath, Action onComplete = null, bool hideProgress = false) =>
+            ProgressUtility.RunTask(
                displayName: "Deleting hub entry",
                onComplete: (t) => onComplete?.Invoke(),
+               hideProgress: hideProgress,
                task: new Task(() =>
                {
                    using var key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"SOFTWARE\Unity Technologies\Unity Editor 5.x", writable: true);
                    foreach (var name in key.GetValueNames().Where(n => n.StartsWith("RecentlyUsedProjectPaths")))
                    {
                        var value = Encoding.ASCII.GetString((byte[])key.GetValue(name));
-                       if (value.StartsWith(instancePath.Replace(@"\", @"/")))
+                       if (value.StartsWith(instancePath.ToCrossPlatformPath()))
                            key.DeleteValue(name);
                    }
                }));
 
-
         /// <summary>Deletes a secondary instance.</summary>
-        public static void Delete(string path, Action onComplete = null) =>
-            _ = ProgressUtility.RunTask(
+        public static Task Delete(string path, Action onComplete = null, bool hideProgress = false) =>
+            ProgressUtility.RunTask(
                displayName: "Removing instance",
                onComplete: (t) => onComplete?.Invoke(),
-               //Deleting with cmd, which prevents 'Directory not empty error', for Directory.Delete(path, true)
-               task: new Task(() => CommandUtility.RunCommand($"rmdir /s/q {path}")));
+               hideProgress: hideProgress,
+               //Deleting with cmd, which prevents 'Directory not empty error', for Directory.Delete(path, recursive: true)
+               task: new Task(() => CommandUtility.RunCommand($"rmdir /s/q {path.ToWindowsPath().WithQuotes()}")));
+
+        public static Task Repair(UnityInstance instance, string path, Action onComplete = null, Action repaint = null, bool hideProgress = false) =>
+            ProgressUtility.RunTask(
+               displayName: "Repairing instance",
+               onComplete: t => onComplete?.Invoke(),
+               hideProgress: hideProgress,
+               task: new Task(async () =>
+               {
+
+                   instance.isSettingUp = true;
+                   repaint?.Invoke();
+
+                   await Delete(path, hideProgress: true);
+                   Directory.CreateDirectory(path);
+                   await Create(Paths.project, path, hideProgress: true);
+
+                   instance.isSettingUp = false;
+                   repaint?.Invoke();
+
+               }));
+
+        /// <summary>Gets if the instance needs to be repaired.</summary>
+        public static bool NeedsRepair(UnityInstance instance) =>
+            !Directory.Exists(Paths.InstancePath(instance.id)) || !Directory.EnumerateFileSystemEntries(Paths.InstancePath(instance.id), "*.*", SearchOption.AllDirectories).Any();
 
     }
 

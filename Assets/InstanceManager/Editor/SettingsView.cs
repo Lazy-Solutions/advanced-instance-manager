@@ -29,6 +29,8 @@ namespace InstanceManager.Editor
 
             }
 
+            Color grayedOutText = new Color(1, 1, 1, 0.5f);
+
             void Header()
             {
 
@@ -40,7 +42,7 @@ namespace InstanceManager.Editor
                     GUIUtility.ExitGUI();
                 }
 
-                EditorGUILayout.LabelField("Settings", new GUIStyle(EditorStyles.label) { fontSize = 20, fixedHeight = 24, padding = new RectOffset(2, 0, -4, 0) });
+                EditorGUILayout.LabelField(Content.settingsText, Style.header);
                 GUILayout.FlexibleSpace();
                 EditorGUILayout.EndHorizontal();
 
@@ -51,32 +53,32 @@ namespace InstanceManager.Editor
 
                 EditorGUILayout.BeginVertical(Style.elementMargin);
 
-                EditorGUILayout.LabelField("Instances path:");
+                EditorGUILayout.LabelField(Content.instancesPath);
                 EditorGUILayout.BeginHorizontal();
 
                 instancesPath = GUILayout.TextField(instancesPath);
-                GUIExt.BeginColorScope(new Color(1, 1, 1, 0.5f));
+                GUIExt.BeginColorScope(grayedOutText);
                 var c = new GUIContent("/" + Paths.instancesPathSuffix);
                 var size = EditorStyles.label.CalcSize(c);
                 EditorGUILayout.LabelField(c, GUILayout.Width(size.x));
                 GUIExt.EndColorScope();
 
-                if (GUILayout.Button(EditorGUIUtility.IconContent("d_Folder Icon"), new GUIStyle(GUI.skin.button) { padding = new RectOffset(2, 2, 2, 2), fixedWidth = 18, fixedHeight = 18 }))
+                if (GUILayout.Button(Content.folder, Style.folder))
                     PickFolder();
 
                 EditorGUILayout.EndHorizontal();
 
-                var fullPath = Path.Combine(instancesPath, Paths.instancesPathSuffix).Replace('\\', '/');
+                var fullPath = Path.Combine(instancesPath, Paths.instancesPathSuffix).ToCrossPlatformPath();
                 EditorGUILayout.BeginHorizontal();
 
                 GUILayout.FlexibleSpace();
                 GUILayout.FlexibleSpace();
 
-                if (EditorGUILayout.LinkButton("Show in explorer"))
+                if (EditorGUILayout.LinkButton(Content.showInExplorer))
                     Process.Start(Paths.instancesPath);
 
                 GUIExt.BeginEnabledScope(fullPath != Paths.instancesPath);
-                if (EditorGUILayout.LinkButton("Apply"))
+                if (EditorGUILayout.LinkButton(Content.Apply))
                 {
                     Directory.CreateDirectory(fullPath);
                     InstanceManager.instances.MoveInstancesPath(fullPath, onComplete: () =>
@@ -98,7 +100,7 @@ namespace InstanceManager.Editor
                 var result = EditorUtility.OpenFolderPanel("Pick folder", instancesPath.Replace(Paths.instancesPathSuffix, ""), "");
                 if (Directory.Exists(result))
                 {
-                    result = result.Replace("Instance Manager", "").Replace(InstanceManager.id, "").Replace('\\', '/').Trim('/');
+                    result = result.Replace("Instance Manager".WithQuotes("\\"), "").Replace(InstanceManager.id.WithQuotes("\\"), "").ToCrossPlatformPath().Trim('/');
                     instancesPath = result;
                 }
             }

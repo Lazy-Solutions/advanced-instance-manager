@@ -81,6 +81,24 @@ namespace InstanceManager.Editor
 
         #endregion
 
+        /// <inheritdoc cref="AddItem(GenericMenu, GUIContent, Action{bool}, bool, bool, GUIContent)"/>
+        public static void AddItem(this GenericMenu menu, GUIContent content, Action action, bool enabled = true, bool isChecked = false, GUIContent offContent = null) =>
+            AddItem(menu, content, _ => action.Invoke(), isChecked, enabled, offContent);
+
+        /// <summary>Adds an item to this <see cref="GenericMenu"/>.</summary>
+        /// <param name="menu">The <see cref="GenericMenu"/>.</param>
+        /// <param name="content">The content of this item.</param>
+        /// <param name="action">The action to perform when click, if <paramref name="enabled"/>.</param>
+        /// <param name="enabled">Sets whatever this item is enabled.</param>
+        /// <param name="offContent">The content to display when item disabled, defaults to <paramref name="content"/> if <see langword="false"/>.</param>
+        public static void AddItem(this GenericMenu menu, GUIContent content, Action<bool> action, bool isChecked, bool enabled = true, GUIContent offContent = null)
+        {
+            if (enabled)
+                menu.AddItem(content, isChecked, () => action.Invoke(!isChecked));
+            else
+                menu.AddDisabledItem(offContent ?? content, isChecked);
+        }
+
         /// <summary>
         /// <para>Unfocuses elements when blank area of <see cref="UnityEditor.EditorWindow"/> clicked.</para>
         /// <para>Returns true if element was unfocused, you may want to <see cref="UnityEditor.EditorWindow.Repaint"/> then.</para>
