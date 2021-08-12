@@ -1,5 +1,4 @@
-﻿using InstanceManager.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -105,30 +104,6 @@ namespace InstanceManager.Utility
                hideProgress: hideProgress,
                //Deleting with cmd, which prevents 'Directory not empty error', for Directory.Delete(path, recursive: true)
                task: new Task(() => CommandUtility.RunCommand($"rmdir /s/q {path.ToWindowsPath().WithQuotes()}")));
-
-        public static Task Repair(UnityInstance instance, string path, Action onComplete = null, Action repaint = null, bool hideProgress = false) =>
-            ProgressUtility.RunTask(
-               displayName: "Repairing instance",
-               onComplete: t => onComplete?.Invoke(),
-               hideProgress: hideProgress,
-               task: new Task(async () =>
-               {
-
-                   instance.isSettingUp = true;
-                   repaint?.Invoke();
-
-                   await Delete(path, hideProgress: true);
-                   Directory.CreateDirectory(path);
-                   await Create(Paths.project, path, hideProgress: true);
-
-                   instance.isSettingUp = false;
-                   repaint?.Invoke();
-
-               }));
-
-        /// <summary>Gets if the instance needs to be repaired.</summary>
-        public static bool NeedsRepair(UnityInstance instance) =>
-            !Directory.Exists(Paths.InstancePath(instance.id)) || !Directory.EnumerateFileSystemEntries(Paths.InstancePath(instance.id), "*.*", SearchOption.AllDirectories).Any();
 
     }
 

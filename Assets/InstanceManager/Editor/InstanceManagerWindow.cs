@@ -1,4 +1,6 @@
 ﻿using InstanceManager.Models;
+using InstanceManager.Utility;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
@@ -76,6 +78,7 @@ namespace InstanceManager.Editor
             public static GUIContent emptyString { get; private set; }
             public static GUIContent close { get; private set; }
             public static GUIContent open { get; private set; }
+            public static GUIContent openScenes { get; private set; }
 
             public static GUIContent showInExplorer { get; private set; }
             public static GUIContent options { get; private set; }
@@ -120,6 +123,7 @@ namespace InstanceManager.Editor
 
                 emptyString ??= new GUIContent(string.Empty);
                 open ??= new GUIContent("Open");
+                openScenes ??= new GUIContent("Open scenes");
                 close ??= new GUIContent("Close");
 
                 showInExplorer ??= new GUIContent("Show in explorer...");
@@ -164,7 +168,7 @@ namespace InstanceManager.Editor
 
         void OnFocus()
         {
-            InstanceManager.instances.Reload();
+            ReloadInstances();
             view.OnFocus();
             Repaint();
         }
@@ -174,7 +178,7 @@ namespace InstanceManager.Editor
 
             window = this;
 
-            InstanceManager.instances.Reload();
+            ReloadInstances();
 
             if (InstanceManager.isSecondInstance)
                 SetInstance(InstanceManager.id);
@@ -183,6 +187,10 @@ namespace InstanceManager.Editor
             Repaint();
 
         }
+
+        public UnityInstance[] instances;
+        void ReloadInstances() =>
+            instances = InstanceUtility.Enumerate().ToArray();
 
         void OnDisable()
         {
@@ -194,12 +202,6 @@ namespace InstanceManager.Editor
 
         void OnGUI()
         {
-
-            if (InstanceManager.instances.isMovingInstances)
-            {
-                SetView(mainView);
-                GUI.enabled = false;
-            }
 
             if (GUIExt.UnfocusOnClick())
                 Repaint();
@@ -214,13 +216,6 @@ namespace InstanceManager.Editor
             view.OnGUI();
             EndCheckResize();
 
-            if (InstanceManager.instances.isMovingInstances)
-            {
-                EditorGUI.DrawRect(new Rect(0, 0, position.width, position.height), overlay);
-                var size = GUI.skin.label.CalcSize(Content.movingInstances);
-                EditorGUI.LabelField(new Rect((position.width / 2) - (size.x / 2), (position.height / 2) - (size.y / 2), size.x, size.y), Content.movingInstances);
-            }
-
         }
 
         #region View
@@ -232,7 +227,7 @@ namespace InstanceManager.Editor
 
         static View mainView { get; } = new MainView();
         static View instanceView { get; } = new InstanceView();
-        static View settingsView { get; } = new SettingsView();
+        //static View settingsView { get; } = new SettingsView();
 
         public class View
         {
@@ -261,17 +256,11 @@ namespace InstanceManager.Editor
         static void ClearInstance() =>
             SetInstance(null);
 
-        static void CloseSettings() =>
-            SetInstance(null);
-
-        static void OpenSettings() =>
-            SetView(settingsView);
-
         static void SetInstance(string id)
         {
 
             instance = !string.IsNullOrEmpty(id)
-            ? InstanceManager.instances.Find(id)
+            ? InstanceUtility.Find(id)
             : null;
 
             SetView(instance is null ? mainView : instanceView);

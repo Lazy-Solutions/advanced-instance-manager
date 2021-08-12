@@ -2,6 +2,7 @@
 using System;
 using System.Linq;
 using UnityEditor;
+using UnityEditor.SceneManagement;
 using UnityEngine;
 
 namespace InstanceManager.Editor
@@ -60,7 +61,7 @@ namespace InstanceManager.Editor
                 EditorGUILayout.EndVertical();
 
                 if (EditorGUI.EndChangeCheck())
-                    InstanceManager.instances.Update(instance);
+                    instance.Save();
 
             }
 
@@ -193,6 +194,18 @@ namespace InstanceManager.Editor
 
                 EditorGUILayout.EndScrollView();
                 EditorGUILayout.EndVertical();
+
+                EditorGUILayout.BeginHorizontal();
+                GUILayout.FlexibleSpace();
+                GUILayout.FlexibleSpace();
+                if (InstanceManager.isSecondInstance && addedScenes.Any() && GUILayout.Button(Content.openScenes))
+                {
+                    var setup = addedScenes.Select(s => new SceneSetup() { path = s.path, isLoaded = true }).ToArray();
+                    setup[0].isActive = true;
+                    EditorSceneManager.RestoreSceneManagerSetup(setup);
+                }
+
+                EditorGUILayout.EndHorizontal();
 
             }
 

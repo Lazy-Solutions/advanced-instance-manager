@@ -22,7 +22,10 @@ namespace InstanceManager.Models
         public UnityInstance(string id)
         {
             m_ID = id;
+            needsRepair = InstanceUtility.NeedsRepair(this);
         }
+
+        #region Properties
 
         [SerializeField] private string m_ID;
         [SerializeField] private int m_processID;
@@ -31,13 +34,11 @@ namespace InstanceManager.Models
         [SerializeField] private bool m_enterPlayModeAutomatically = true;
         [SerializeField] private string[] m_scenes;
 
-        public static event Action autoSyncChanged;
+        /// <summary>The paths to this instance file.</summary>
+        internal string filePath => Paths.InstancePath(id) + "/" + InstanceUtility.instanceFileName;
 
-        public bool needsRepair => GetsNeedsRepair();
-
-        bool? m_needsRepair;
-        bool GetsNeedsRepair() =>
-            m_needsRepair ??= SymLinkUtility.NeedsRepair(this);
+        /// <summary>Gets if this process needs repairing.</summary>
+        public bool needsRepair { get; }
 
         /// <summary>Gets or sets the window layout.</summary>
         public string preferredLayout
@@ -73,6 +74,14 @@ namespace InstanceManager.Models
             set => m_scenes = value;
         }
 
+        /// <summary>Saves the instance settings to disk.</summary>
+        public void Save() =>
+            InstanceUtility.Save(this);
+
+        /// <summary>Removes the instance from disk.</summary>
+        public void Remove(Action onComplete = null) =>
+            InstanceUtility.Remove(this, onComplete);
+
         /// <summary>Gets whatever this instance is running.</summary>
         public bool isRunning
         {
@@ -90,11 +99,12 @@ namespace InstanceManager.Models
         public string path => Paths.InstancePath(id);
 
         /// <summary>Gets if the instance is currently being set up.</summary>
-        public bool isSettingUp { get; internal set; }
+        public bool isSettingUp => InstanceUtility.IsInstanceBeingSetUp(this);
 
         /// <summary>Gets the process of this instance, if it is running.</summary>
         public Process InstanceProcess { get; private set; }
 
+        #endregion
         #region ISerializationCallbackReceiver
 
         public void OnBeforeSerialize()
@@ -127,6 +137,12 @@ namespace InstanceManager.Models
         }
 
         #endregion
+
+        internal static event Action autoSyncChanged;
+
+        /// <summary>Refreshes this <see cref="UnityInstance"/>.</summary>
+        public void Refresh() =>
+            InstanceUtility.Refresh(this);
 
         /// <summary>Set property of scene.</summary>
         /// <param name="enabled">Set whatever this scene is enabled or not.</param>
@@ -176,9 +192,9 @@ namespace InstanceManager.Models
                 fileName: EditorApplication.applicationPath,
                 arguments: "-projectPath " + path.WithQuotes()));
 
+            Save();
             InstanceProcess.EnableRaisingEvents = true;
             InstanceProcess.Exited += InstanceProcess_Exited;
-            InstanceManager.instances.Save();
 
         }
 
@@ -208,15 +224,14 @@ namespace InstanceManager.Models
 
         }
 
-        void InstanceProcess_Exited(object sender, EventArgs e)
-        {
-            //Debug.Log("exited");
+        void InstanceProcess_Exited(object sender, EventArgs e) =>
             OnClosed();
-        }
 
+        /// <summary>Closes this instance.</summary>
         public void Close() =>
             Close(null);
 
+        /// <summary>Closes this instance.</summary>
         public void Close(Action onClosed = null)
         {
 
@@ -276,7 +291,7 @@ namespace InstanceManager.Models
 
             SymLinkUtility.DeleteHubEntry(path);
 
-            InstanceManager.instances.Save();
+            Save();
             if (InstanceManagerWindow.window)
             {
                 InstanceManagerWindow.window.Repaint();

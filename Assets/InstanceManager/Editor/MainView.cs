@@ -85,9 +85,6 @@ namespace InstanceManager.Editor
                     isEnabled: !instance.isSettingUp,
                     instance);
 
-            void Remove(UnityInstance instance) =>
-                 InstanceManager.instances.Remove(instance, window.Repaint);
-
             void DrawInstanceRow(string id, GUIContent status, bool? openButtonValue = null, bool isEnabled = true, UnityInstance instance = null)
             {
 
@@ -102,7 +99,7 @@ namespace InstanceManager.Editor
                 else if (instance.needsRepair)
                 {
                     if (GUILayout.Button(Content.repair, GUILayout.ExpandWidth(false)))
-                        SymLinkUtility.Repair(instance, instance.path, onComplete: () => { InstanceManager.instances.Reload(); window.Repaint(); });
+                        InstanceUtility.Repair(instance, instance.path, onComplete: () => { window.ReloadInstances(); window.Repaint(); });
                 }
                 else if (GUILayout.Button(instance.isRunning ? Content.close : Content.open, GUILayout.ExpandWidth(false)))
                     instance.ToggleOpen();
@@ -129,18 +126,18 @@ namespace InstanceManager.Editor
 
                     var menu = new GenericMenu();
 
-                    if (instance.isRunning)
-                        menu.AddItem(Content.close, instance.Close, enabled: !instance.needsRepair);
-                    else
+                    if (!instance.isRunning)
                         menu.AddItem(Content.open, instance.Open, enabled: !instance.needsRepair);
+                    else
+                        menu.AddItem(Content.close, instance.Close, enabled: !instance.needsRepair);
 
                     menu.AddSeparator(string.Empty);
                     menu.AddItem(Content.showInExplorer, false, () =>
                         Process.Start("explorer", instance.path.ToWindowsPath().WithQuotes()));
 
-                    menu.AddItem(Content.open, () => SetInstance(instance.id), enabled: instance.isRunning);
+                    menu.AddItem(Content.options, () => SetInstance(instance.id), enabled: !instance.isRunning);
                     menu.AddSeparator(string.Empty);
-                    menu.AddItem(Content.delete, () => Remove(instance), enabled: !instance.isRunning);
+                    menu.AddItem(Content.delete, () => instance.Remove(window.Repaint), enabled: !instance.isRunning);
 
                     menu.ShowAsContext();
 
@@ -172,7 +169,7 @@ namespace InstanceManager.Editor
                 if (GUILayout.Button(Content.createNewInstance, Style.createButton))
                 {
 
-                    InstanceManager.instances.Create(onComplete: () =>
+                    InstanceUtility.Create(onComplete: () =>
                     {
                         EditorApplication.delayCall += window.Repaint;
                         EditorApplication.QueuePlayerLoopUpdate();
