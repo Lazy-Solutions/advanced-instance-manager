@@ -20,7 +20,6 @@ namespace InstanceManager
 
         //TODO: Cannot get current window layout anymore
         //TODO: Fix auto sync
-        //TODO: Open on right click menu is disabled
 
         //TODO: After release:
         //TODO: Add multi-platform support
