@@ -20,8 +20,11 @@ namespace InstanceManager
 
         }
 
-        public static void ReloadScenes() =>
-            EditorSceneManager.RestoreSceneManagerSetup(EditorSceneManager.GetSceneManagerSetup());
+        public static void ReloadScenes()
+        {
+            if (EditorSceneManager.GetSceneManagerSetup().Length > 0)
+                EditorSceneManager.RestoreSceneManagerSetup(EditorSceneManager.GetSceneManagerSetup());
+        }
 
     }
 
