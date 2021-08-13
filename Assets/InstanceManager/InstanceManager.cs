@@ -16,11 +16,8 @@ namespace InstanceManager
         //TODO: Something is wrong which causes local multiplayer to not assign correct ids to each instance
         //TODO: Check out: https://github.com/VeriorPies/ParrelSync/tree/95a062cb14e669c7834094366611765d3a9658d6
 
-        //TODO: One cannot unpause a second instance, this seems to be due to plugin code being paused, which makes sense, but we need a way to circumvent this?
-
         //TODO: After release:
         //TODO: Add multi-platform support
-        //TODO: Fix cross process events only raising event once after registered
 
         /// <summary>The secondary instances that have been to this project.</summary>
         public static IEnumerable<UnityInstance> instances => InstanceUtility.Enumerate();
@@ -86,7 +83,7 @@ namespace InstanceManager
             else
             {
 
-                CrossProcessEventUtility.Initialize(instance.lockPath);
+                CrossProcessEventUtility.Initialize();
 
                 CrossProcessEventUtility.On(nameof(OnPrimaryEnterPlayMode), () => OnPrimaryEnterPlayMode?.Invoke());
                 CrossProcessEventUtility.On(nameof(OnPrimaryExitPlayMode), () => OnPrimaryExitPlayMode?.Invoke());
@@ -111,6 +108,8 @@ namespace InstanceManager
         [InitializeOnLoadMethod]
         static void OnLoad()
         {
+
+            WindowUtility.Initialize();
 
             if (isPrimaryInstance)
                 InitializePrimaryInstance();
@@ -146,6 +145,12 @@ namespace InstanceManager
             EditorApplication.quitting += () =>
             {
                 InstanceUtility.SetLocked(false);
+            };
+
+            EditorApplication.playModeStateChanged += (state) =>
+            {
+                if (state == PlayModeStateChange.EnteredPlayMode)
+                    WindowUtility.StopTaskbarFromFlashing();
             };
 
             onSecondInstanceStarted?.Invoke();

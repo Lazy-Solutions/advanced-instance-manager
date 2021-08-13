@@ -3,88 +3,43 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using UnityEditor;
-using UnityEngine;
 
 namespace InstanceManager.Utility
 {
 
-    [ExecuteAlways]
+    /// <summary>Provides utility functions for sending 'events' to secondary instances.</summary>
     public static class CrossProcessEventUtility
     {
 
         #region Watcher
 
-        static CancellationTokenSource token;
-
-        internal static void Initialize(string instancePath)
+        /// <summary>Initializes the event listener, for a secondary instance.</summary>
+        internal static void Initialize()
         {
 
             if (InstanceManager.isPrimaryInstance)
                 return;
 
-            var syncContext = SynchronizationContext.Current;
-            token?.Cancel();
-            token = new CancellationTokenSource();
+            var instancePath = InstanceManager.instance.lockPath;
+            var file = new FileInfo(instancePath);
 
-            EditorApplication.playModeStateChanged -= OnPlaymodeChanged;
-            EditorApplication.playModeStateChanged += OnPlaymodeChanged;
+            DateTime lastUpdate = DateTime.Now;
+            EditorApplication.update -= Update;
+            EditorApplication.update += Update;
 
-            void OnPlaymodeChanged(PlayModeStateChange state)
+            void Update()
             {
-                if (state == PlayModeStateChange.ExitingEditMode || state == PlayModeStateChange.ExitingPlayMode)
-                    token?.Cancel();
+
+                if (DateTime.Now - lastUpdate < TimeSpan.FromSeconds(0.5))
+                    return;
+                lastUpdate = DateTime.Now;
+
+                file.Refresh();
+                if (file.Length > 0)
+                    OnEvent();
+
             }
-
-            Task.Factory.StartNew(
-                state: token.Token,
-                cancellationToken: token.Token,
-                creationOptions: TaskCreationOptions.LongRunning,
-                scheduler: TaskScheduler.Default,
-                action: async (t) =>
-                {
-
-                    var token = (CancellationToken)t;
-
-                    while (!token.IsCancellationRequested)
-                    {
-
-                        try
-                        {
-
-                            var file = new FileInfo(instancePath);
-
-                            if (file.Exists)
-                            {
-
-                                while (file.Length == 0)
-                                {
-                                    await Task.Delay(1000);
-
-                                    if (token.IsCancellationRequested)
-                                        return;
-                                    file.Refresh();
-                                }
-
-                                syncContext.Post(_ => OnEvent(), null);
-
-                            }
-
-                            await Task.Delay(1000);
-
-                        }
-                        catch (Exception ex)
-                        {
-                            Debug.LogError(ex);
-                        }
-
-                    }
-
-                    syncContext.Post(_ => Initialize(instancePath), null);
-
-                });
 
         }
 
@@ -105,32 +60,33 @@ namespace InstanceManager.Utility
 
         #endregion
 
+        /// <summary>Sends an event to all open secondary instances.</summary>
         public static void Send(string name)
         {
             foreach (var instance in InstanceManager.instances.ToArray())
                 Send(instance, name);
         }
 
+        /// <summary>Sends an event to the specified secondary instance.</summary>
         public static void Send(UnityInstance instance, string name) =>
             Send(instance.lockPath, name);
 
         static void Send(string path, string name)
         {
 
-            if (InstanceManager.isSecondaryInstance)
+            if (InstanceManager.isSecondaryInstance || !File.Exists(path))
                 return;
 
             //Listeners can be added to primary instance
             RaiseEvent(name);
-            var writer = File.AppendText(path);
-            writer.WriteLine(name);
-            writer.Flush();
-            writer.Close();
-            writer.Dispose();
+            using (var writer = File.AppendText(path))
+                writer.WriteLine(name);
 
         }
 
         static readonly Dictionary<string, List<Action>> listeners = new Dictionary<string, List<Action>>();
+
+        /// <summary>Adds a listener to the specified event.</summary>
         public static void On(string name, Action action)
         {
             if (!listeners.ContainsKey(name))
@@ -140,11 +96,11 @@ namespace InstanceManager.Utility
 
         static void RaiseEvent(string name)
         {
-            Debug.Log("Event raised: " + name);
+
             if (listeners.TryGetValue(name, out var list))
                 foreach (var callback in list)
                     callback?.Invoke();
-            EditorApplication.QueuePlayerLoopUpdate();
+
         }
 
     }
