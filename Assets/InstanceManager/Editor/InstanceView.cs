@@ -2,7 +2,6 @@
 using System;
 using System.Linq;
 using UnityEditor;
-using UnityEditor.SceneManagement;
 using UnityEngine;
 
 namespace InstanceManager.Editor
@@ -70,7 +69,7 @@ namespace InstanceManager.Editor
 
                 GUILayout.BeginHorizontal();
 
-                if (!InstanceManager.isSecondInstance && GUILayout.Button(Content.back))
+                if (!InstanceManager.isSecondaryInstance && GUILayout.Button(Content.back))
                 {
                     ClearInstance();
                     GUIUtility.ExitGUI();
@@ -88,7 +87,7 @@ namespace InstanceManager.Editor
                 EditorGUILayout.LabelField(c, GUILayout.Width(size.x));
                 instance.autoSync = EditorGUILayout.ToggleLeft(Content.emptyString, instance.autoSync, GUILayout.Width(16));
 
-                if (InstanceManager.isSecondInstance &&
+                if (InstanceManager.isSecondaryInstance &&
                     GUILayout.Button(Content.reload, GUILayout.ExpandWidth(false)))
                 {
                     InstanceManager.SyncWithPrimaryInstance();
@@ -108,7 +107,7 @@ namespace InstanceManager.Editor
                 if (i == -1) i = 0;
                 instance.preferredLayout = layouts[EditorGUILayout.Popup("Preferred layout:", i, layouts)];
 
-                if (InstanceManager.isSecondInstance && GUILayout.Button(Content.apply, GUILayout.ExpandWidth(false)))
+                if (InstanceManager.isSecondaryInstance && GUILayout.Button(Content.apply, GUILayout.ExpandWidth(false)))
                 {
                     WindowLayoutUtility.Find(instance.preferredLayout).Apply();
                     Open();
@@ -198,12 +197,8 @@ namespace InstanceManager.Editor
                 EditorGUILayout.BeginHorizontal();
                 GUILayout.FlexibleSpace();
                 GUILayout.FlexibleSpace();
-                if (InstanceManager.isSecondInstance && addedScenes.Any() && GUILayout.Button(Content.openScenes))
-                {
-                    var setup = addedScenes.Select(s => new SceneSetup() { path = s.path, isLoaded = true }).ToArray();
-                    setup[0].isActive = true;
-                    EditorSceneManager.RestoreSceneManagerSetup(setup);
-                }
+                if (InstanceManager.isSecondaryInstance && addedScenes.Any() && GUILayout.Button(Content.openScenes))
+                    SceneUtility.OpenScenes(addedScenes.Select(s => s.path).ToArray());
 
                 EditorGUILayout.EndHorizontal();
 

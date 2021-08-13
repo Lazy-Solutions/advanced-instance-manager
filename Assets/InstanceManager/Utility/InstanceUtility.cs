@@ -16,6 +16,29 @@ namespace InstanceManager.Utility
         /// <summary>The name of the instance settings file.</summary>
         public const string instanceFileName = ".instance";
 
+        static string instanceLockFile => Paths.project + "/" + instanceFileName + "-lock";
+
+        /// <summary>Gets if instance is 'locked'.</summary>
+        internal static bool IsLocked() =>
+            File.Exists(instanceLockFile);
+
+        /// <summary>'Locks' this instance.</summary>
+        internal static void SetLocked(bool isLocked)
+        {
+            if (isLocked && InstanceManager.isSecondaryInstance)
+                File.WriteAllText(instanceLockFile, null);
+            else if (!isLocked && IsLocked())
+                File.Delete(instanceLockFile);
+        }
+
+        /// <summary>'Unlocks' the instance.</summary>
+        internal static void UnlockInstance(UnityInstance instance)
+        {
+            var path = instance.filePath + "-lock";
+            if (File.Exists(path))
+                File.Delete(path);
+        }
+
         /// <summary>Loads local instance file. Returns <see langword="null"/> if none exists or instance is primary.</summary>
         public static UnityInstance LocalInstance() =>
             Load(Paths.project + "/" + instanceFileName);

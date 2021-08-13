@@ -180,7 +180,7 @@ namespace InstanceManager.Editor
 
             ReloadInstances();
 
-            if (InstanceManager.isSecondInstance)
+            if (InstanceManager.isSecondaryInstance)
                 SetInstance(InstanceManager.id);
 
             view.OnEnable();

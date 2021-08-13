@@ -18,7 +18,10 @@ namespace InstanceManager.Utility
             "-lock",
             "\\Search",
             "LastSceneManagerSetup.txt" ,
-            "EditorInstance.json"
+            "EditorInstance.json",
+            "ArtifactDB",
+            "SourceAssetDB",
+            "\\Bee"
         };
 
         /// <summary>Creates a new secondary instance.</summary>
@@ -63,6 +66,15 @@ namespace InstanceManager.Utility
 
                        }
 
+                       yield return Copy(Path.Combine(projectPath, "Library", "ArtifactDB"), Path.Combine(targetPath, "Library", "ArtifactDB"));
+                       yield return Copy(Path.Combine(projectPath, "Library", "SourceAssetDB"), Path.Combine(targetPath, "Library", "SourceAssetDB"));
+
+                       static Task Copy(string path, string destination) =>
+                           Task.Run(async () =>
+                           {
+                               await CommandUtility.RunCommand($"copy {path.ToWindowsPath().WithQuotes()} {destination.ToWindowsPath().WithQuotes()}");
+                           });
+
                        Task SymLinkRelative(string relativePath) =>
                            SymLink(
                                linkPath: Path.Combine(targetPath, relativePath),
@@ -71,8 +83,7 @@ namespace InstanceManager.Utility
                        static Task SymLink(string path, string linkPath) =>
                            Task.Run(async () =>
                            {
-                               //if (Directory.Exists(path))
-                               await CommandUtility.RunCommand($"mklink {(Directory.Exists(path) ? "/j" : "/h")} {linkPath.ToWindowsPath().WithQuotes()} {path.ToWindowsPath().WithQuotes()}", closeWindowWhenDone: false);
+                               await CommandUtility.RunCommand($"mklink {(Directory.Exists(path) ? "/j" : "/h")} {linkPath.ToWindowsPath().WithQuotes()} {path.ToWindowsPath().WithQuotes()}");
                            });
 
                    }

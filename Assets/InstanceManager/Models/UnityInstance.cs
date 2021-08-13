@@ -182,9 +182,10 @@ namespace InstanceManager.Models
         public void Open()
         {
 
-            if (InstanceManager.isSecondInstance || isRunning || needsRepair)
+            if (InstanceManager.isSecondaryInstance || isRunning || needsRepair)
                 return;
 
+            InstanceUtility.UnlockInstance(this);
             SetupScenes();
             quitRequest = new CrossProcessEvent($"QuitRequest ({id})");
             quitRequest.InitializeHost();
@@ -204,7 +205,6 @@ namespace InstanceManager.Models
             var root = "sceneSetups:";
             bool isFirstScene = true;
 
-
             string GetSceneString(string scenePath)
             {
 
@@ -219,8 +219,14 @@ namespace InstanceManager.Models
 
             }
 
-            var yaml = root + Environment.NewLine + string.Join(Environment.NewLine, scenes?.Select(GetSceneString) ?? Array.Empty<string>());
-            File.WriteAllText(Path.Combine(path, "Library", "LastSceneManagerSetup.txt"), yaml);
+            var path = Path.Combine(this.path, "Library", "LastSceneManagerSetup.txt");
+            if (scenes.Any())
+            {
+                var yaml = root + Environment.NewLine + string.Join(Environment.NewLine, scenes?.Select(GetSceneString) ?? Array.Empty<string>());
+                File.WriteAllText(path, yaml);
+            }
+            else
+                File.Delete(path);
 
         }
 
@@ -235,7 +241,7 @@ namespace InstanceManager.Models
         public void Close(Action onClosed = null)
         {
 
-            if (InstanceManager.isSecondInstance || !isRunning || InstanceProcess is null)
+            if (InstanceManager.isSecondaryInstance || !isRunning || InstanceProcess is null)
                 return;
 
             //Lets copy variable, since if we use property when killing process after 5
@@ -279,8 +285,8 @@ namespace InstanceManager.Models
 
                 this.OnClosed();
 
-                EditorApplication.delayCall += () =>
-                onClosed?.Invoke();
+                EditorApplication.delayCall +=
+                    () => onClosed?.Invoke();
 
             }
 

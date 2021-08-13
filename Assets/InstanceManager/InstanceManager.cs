@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEditor;
 using UnityEditor.Compilation;
-using UnityEditor.SceneManagement;
 using UnityEngine;
 
 namespace InstanceManager
@@ -18,7 +17,6 @@ namespace InstanceManager
         //TODO: Something is wrong which causes local multiplayer to not assign correct ids to each instance
         //TODO: Check out: https://github.com/VeriorPies/ParrelSync/tree/95a062cb14e669c7834094366611765d3a9658d6
 
-        //TODO: Cannot get current window layout anymore
         //TODO: Fix auto sync
 
         //TODO: After release:
@@ -38,7 +36,7 @@ namespace InstanceManager
         public static bool isPrimaryInstance => instance == null;
 
         /// <summary>Gets if the current instance is a secondary instance.</summary>
-        public static bool isSecondInstance => instance != null;
+        public static bool isSecondaryInstance => instance != null;
 
         /// <summary>Gets the id of the current instance. <see langword="null"/> if primary instance.</summary>
         public static string id => instance?.id;
@@ -159,15 +157,23 @@ namespace InstanceManager
         static async void InitializeSecondInstance()
         {
 
-            await Task.Delay(100);
-            WindowLayoutUtility.Find(instance.preferredLayout).Apply();
+            if (!InstanceUtility.IsLocked())
+            {
+                await Task.Delay(100);
+                WindowLayoutUtility.Find(instance.preferredLayout).Apply();
+                InstanceUtility.SetLocked(true);
+            }
 
-            //AssetDatabase.DisallowAutoRefresh();
+            EditorApplication.quitting += () =>
+            {
+                InstanceUtility.SetLocked(false);
+            };
+
             onSecondInstanceStarted?.Invoke();
 
         }
 
-        /// <summary>Syncs this instance with the primary instance, does nothing if current instance is primary.</summary>
+        /// <summary>Sync this instance with the primary instance, does nothing if current instance is primary.</summary>
         public static void SyncWithPrimaryInstance()
         {
 
@@ -175,11 +181,8 @@ namespace InstanceManager
                 return;
 
             AssetDatabase.Refresh(ImportAssetOptions.ForceUpdate);
-
-            var setup = EditorSceneManager.GetSceneManagerSetup();
-            EditorSceneManager.RestoreSceneManagerSetup(setup);
-
-            CompilationPipeline.RequestScriptCompilation();
+            SceneUtility.ReloadScenes();
+            CompilationPipeline.RequestScriptCompilation(RequestScriptCompilationOptions.CleanBuildCache);
 
         }
 
