@@ -17,7 +17,7 @@ namespace InstanceManager
         //TODO: Something is wrong which causes local multiplayer to not assign correct ids to each instance
         //TODO: Check out: https://github.com/VeriorPies/ParrelSync/tree/95a062cb14e669c7834094366611765d3a9658d6
 
-        //TODO: Fix auto sync
+        //TODO: We must fix cross process events, since only 2 out 3, when testing, instances auto reloaded with auto sync enabled
 
         //TODO: After release:
         //TODO: Add multi-platform support
