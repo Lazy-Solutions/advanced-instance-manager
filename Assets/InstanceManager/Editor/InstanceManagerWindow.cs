@@ -43,25 +43,25 @@ namespace InstanceManager.Editor
             public static void Initialize()
             {
 
-                margin ??= new GUIStyle() { margin = new RectOffset(12, 12, 12, 12) };
-                createButton ??= new GUIStyle(GUI.skin.button) { padding = new RectOffset(12, 12, 6, 6) };
-                row ??= new GUIStyle(EditorStyles.toolbar) { padding = new RectOffset(12, 12, 12, 6), fixedHeight = 42 };
-                noItemsText ??= new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleCenter };
-                removeButton ??= new GUIStyle(GUI.skin.button) { margin = new RectOffset(12, 0, 0, 0) };
+                if (margin is null) margin = new GUIStyle() { margin = new RectOffset(12, 12, 12, 12) };
+                if (createButton is null) createButton = new GUIStyle(GUI.skin.button) { padding = new RectOffset(12, 12, 6, 6) };
+                if (row is null) row = new GUIStyle(EditorStyles.toolbar) { padding = new RectOffset(12, 12, 12, 6), fixedHeight = 42 };
+                if (noItemsText is null) noItemsText = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleCenter };
+                if (removeButton is null) removeButton = new GUIStyle(GUI.skin.button) { margin = new RectOffset(12, 0, 0, 0) };
 
-                secondaryInstanceMargin ??= new GUIStyle() { margin = new RectOffset(6, 6, 6, 6) };
-                elementMargin ??= new GUIStyle() { margin = new RectOffset(0, 0, 12, 0) };
+                if (secondaryInstanceMargin is null) secondaryInstanceMargin = new GUIStyle() { margin = new RectOffset(6, 6, 6, 6) };
+                if (elementMargin is null) elementMargin = new GUIStyle() { margin = new RectOffset(0, 0, 12, 0) };
 
-                searchBox ??= new GUIStyle(EditorStyles.textField) { margin = new RectOffset(0, 6, 0, 0) };
-                scenesList ??= new GUIStyle(GUI.skin.box) { margin = new RectOffset(6, 6, 8, 6) };
-                scenesSeparator ??= new GUIStyle(GUI.skin.box);
-                scenesSeparator.normal.background = EditorGUIUtility.whiteTexture;
+                if (searchBox is null) searchBox = new GUIStyle(EditorStyles.textField) { margin = new RectOffset(0, 6, 0, 0) };
+                if (scenesList is null) scenesList = new GUIStyle(GUI.skin.box) { margin = new RectOffset(6, 6, 8, 6) };
+                if (scenesSeparator is null) scenesSeparator = new GUIStyle(GUI.skin.box);
+                if (scenesSeparator is null) scenesSeparator.normal.background = EditorGUIUtility.whiteTexture;
 
-                moveSceneButton ??= new GUIStyle(GUI.skin.button) { fontSize = 18, fixedWidth = 21, fixedHeight = 21, padding = new RectOffset(2, 0, 0, 0) };
-                menu ??= new GUIStyle(GUI.skin.button) { fontSize = 20, fixedWidth = 16, fixedHeight = 19 };
+                if (moveSceneButton is null) moveSceneButton = new GUIStyle(GUI.skin.button) { fontSize = 18, fixedWidth = 21, fixedHeight = 21, padding = new RectOffset(2, 0, 0, 0) };
+                if (menu is null) menu = new GUIStyle(GUI.skin.button) { fontSize = 20, fixedWidth = 16, fixedHeight = 19 };
 
-                header ??= new GUIStyle(EditorStyles.label) { fontSize = 20, fixedHeight = 24, padding = new RectOffset(2, 0, -4, 0) };
-                folder = new GUIStyle(GUI.skin.button) { padding = new RectOffset(2, 2, 2, 2), fixedWidth = 18, fixedHeight = 18 };
+                if (header is null) header = new GUIStyle(EditorStyles.label) { fontSize = 20, fixedHeight = 24, padding = new RectOffset(2, 0, -4, 0) };
+                if (folder is null) folder = new GUIStyle(GUI.skin.button) { padding = new RectOffset(2, 2, 2, 2), fixedWidth = 18, fixedHeight = 18 };
 
             }
 
@@ -116,49 +116,49 @@ namespace InstanceManager.Editor
             public static void Initialize()
             {
 
-                status ??= new GUIContent("Status:                     ");
-                noInstances ??= new GUIContent("No instances found.");
-                running ??= new GUIContent("Running");
-                notRunning ??= new GUIContent("Not running");
+                if (status is null) status = new GUIContent("Status:                     ");
+                if (noInstances is null) noInstances = new GUIContent("No instances found.");
+                if (running is null) running = new GUIContent("Running");
+                if (notRunning is null) notRunning = new GUIContent("Not running");
 
-                emptyString ??= new GUIContent(string.Empty);
-                open ??= new GUIContent("Open");
-                openScenes ??= new GUIContent("Open scenes");
-                close ??= new GUIContent("Close");
+                if (emptyString is null) emptyString = new GUIContent(string.Empty);
+                if (open is null) open = new GUIContent("Open");
+                if (openScenes is null) openScenes = new GUIContent("Open scenes");
+                if (close is null) close = new GUIContent("Close");
 
-                showInExplorer ??= new GUIContent("Show in explorer...");
-                options ??= new GUIContent("Options...");
-                delete ??= new GUIContent("Delete");
+                if (showInExplorer is null) showInExplorer = new GUIContent("Show in explorer...");
+                if (options is null) options = new GUIContent("Options...");
+                if (delete is null) delete = new GUIContent("Delete");
 
-                symLinkerUpdate ??= new GUIContent("SymLinker.exe has an update available.");
-                symLinkerNotInstalled ??= new GUIContent("SymLinker.exe is not installed.");
-                update ??= new GUIContent("Update");
-                install ??= new GUIContent("Install");
-                github ??= new GUIContent("Github");
-                createNewInstance ??= new GUIContent("Create new instance");
+                if (symLinkerUpdate is null) symLinkerUpdate = new GUIContent("SymLinker.exe has an update available.");
+                if (symLinkerNotInstalled is null) symLinkerNotInstalled = new GUIContent("SymLinker.exe is not installed.");
+                if (update is null) update = new GUIContent("Update");
+                if (install is null) install = new GUIContent("Install");
+                if (github is null) github = new GUIContent("Github");
+                if (createNewInstance is null) createNewInstance = new GUIContent("Create new instance");
 
-                back ??= new GUIContent("←");
-                reload ??= new GUIContent("↻", "Sync with primary instance");
-                autoSync ??= new GUIContent("Auto sync:");
-                apply ??= new GUIContent("apply");
-                Apply ??= new GUIContent("Apply");
-                autoPlayMode ??= new GUIContent("Automatically enter / exit play mode: ");
+                if (back is null) back = new GUIContent("←");
+                if (reload is null) reload = new GUIContent("↻", "Sync with primary instance");
+                if (autoSync is null) autoSync = new GUIContent("Auto sync:");
+                if (apply is null) apply = new GUIContent("apply");
+                if (Apply is null) Apply = new GUIContent("Apply");
+                if (autoPlayMode is null) autoPlayMode = new GUIContent("Automatically enter / exit play mode: ");
 
-                scenesToOpen ??= new GUIContent("Scenes to open:");
-                search ??= new GUIContent(" Search:");
+                if (scenesToOpen is null) scenesToOpen = new GUIContent("Scenes to open:");
+                if (search is null) search = new GUIContent(" Search:");
 
-                up ??= new GUIContent("▴");
-                down ??= new GUIContent("▾");
+                if (up is null) up = new GUIContent("▴");
+                if (down is null) down = new GUIContent("▾");
 
-                movingInstances ??= new GUIContent("Moving instances...");
-                menu ??= new GUIContent("⋮");
-                settings ??= new GUIContent(EditorGUIUtility.IconContent("d_Preset.Context").image, "Settings");
+                if (movingInstances is null) movingInstances = new GUIContent("Moving instances...");
+                if (menu is null) menu = new GUIContent("⋮");
+                if (settings is null) settings = new GUIContent(EditorGUIUtility.IconContent("d_Preset.Context").image, "Settings");
 
-                settingsText ??= new GUIContent("Settings");
-                instancesPath ??= new GUIContent("Instances path:");
-                folder ??= new GUIContent(EditorGUIUtility.IconContent("d_Folder Icon").image, "Pick folder");
+                if (settingsText is null) settingsText = new GUIContent("Settings");
+                if (instancesPath is null) instancesPath = new GUIContent("Instances path:");
+                if (folder is null) folder = new GUIContent(EditorGUIUtility.IconContent("d_Folder Icon").image, "Pick folder");
 
-                repair ??= new GUIContent("Repair");
+                if (repair is null) repair = new GUIContent("Repair");
 
             }
 

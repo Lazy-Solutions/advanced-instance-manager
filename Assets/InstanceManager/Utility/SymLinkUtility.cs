@@ -98,13 +98,13 @@ namespace InstanceManager.Utility
                hideProgress: hideProgress,
                task: new Task(() =>
                {
-                   using var key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"SOFTWARE\Unity Technologies\Unity Editor 5.x", writable: true);
-                   foreach (var name in key.GetValueNames().Where(n => n.StartsWith("RecentlyUsedProjectPaths")))
-                   {
-                       var value = Encoding.ASCII.GetString((byte[])key.GetValue(name));
-                       if (value.StartsWith(instancePath.ToCrossPlatformPath()))
-                           key.DeleteValue(name);
-                   }
+                   using (var key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"SOFTWARE\Unity Technologies\Unity Editor 5.x", writable: true))
+                       foreach (var name in key.GetValueNames().Where(n => n.StartsWith("RecentlyUsedProjectPaths")))
+                       {
+                           var value = Encoding.ASCII.GetString((byte[])key.GetValue(name));
+                           if (value.StartsWith(instancePath.ToCrossPlatformPath()))
+                               key.DeleteValue(name);
+                       }
                }));
 
         /// <summary>Deletes a secondary instance.</summary>
