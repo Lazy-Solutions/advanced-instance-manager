@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEditor;
 using UnityEditor.Compilation;
+using UnityEngine;
 
 namespace InstanceManager
 {
@@ -169,7 +170,7 @@ namespace InstanceManager
         public static void SyncWithPrimaryInstance()
         {
 
-            if (isPrimaryInstance)
+            if (isPrimaryInstance || Application.isPlaying)
                 return;
 
             AssetDatabase.Refresh(ImportAssetOptions.ForceUpdate);
