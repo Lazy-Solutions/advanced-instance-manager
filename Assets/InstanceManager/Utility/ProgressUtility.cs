@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Threading.Tasks;
 using UnityEditor;
 
@@ -22,6 +21,8 @@ namespace InstanceManager.Utility
             if (!canRun)
                 return;
 
+#if UNITY_2020
+
             Stopwatch watch = null;
             int? progress = null;
 
@@ -31,6 +32,7 @@ namespace InstanceManager.Utility
                 watch = new Stopwatch();
                 watch.Start();
             }
+#endif
 
             try
             {
@@ -44,6 +46,7 @@ namespace InstanceManager.Utility
 
             EditorApplication.delayCall += () => onComplete?.Invoke(task);
 
+#if UNITY_2020
             if (!hideProgress)
             {
                 watch?.Stop();
@@ -51,7 +54,8 @@ namespace InstanceManager.Utility
                 if (watch.ElapsedMilliseconds < minDisplayTime)
                     await Task.Delay(TimeSpan.FromMilliseconds(minDisplayTime - watch?.ElapsedMilliseconds ?? 0));
                 if (progress.HasValue) Progress.Remove(progress.Value);
-            }
+        }
+#endif
 
         }
 

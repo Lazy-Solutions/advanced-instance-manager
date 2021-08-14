@@ -153,7 +153,9 @@ namespace InstanceManager.Models
         public void SetScene(string path, bool? enabled = null, int? index = null)
         {
 
-            m_scenes ??= Array.Empty<string>();
+            if (m_scenes is null)
+                m_scenes = Array.Empty<string>();
+
             if (enabled.HasValue)
             {
                 if (enabled.Value && !m_scenes.Contains(path))
@@ -228,7 +230,7 @@ namespace InstanceManager.Models
                 var yaml = root + Environment.NewLine + string.Join(Environment.NewLine, scenes?.Select(GetSceneString) ?? Array.Empty<string>());
                 File.WriteAllText(path, yaml);
             }
-            else
+            else if (File.Exists(path))
                 File.Delete(path);
 
         }

@@ -54,6 +54,7 @@ namespace InstanceManager.Utility
         /// <summary>Enumerates all secondary instances for this project.</summary>
         public static IEnumerable<UnityInstance> Enumerate() =>
               Directory.GetDirectories(Paths.aboveProject).
+              Where(f => Path.GetFileName(f).StartsWith(Application.productName + "﹕")).
               Select(f => Load(Path.Combine(f, instanceFileName))).
               OfType<UnityInstance>();
 
@@ -61,7 +62,7 @@ namespace InstanceManager.Utility
         public static UnityInstance Create(Action onComplete = null)
         {
 
-            var id = IDUtility.Generate(validate: id => !Directory.Exists(Paths.InstancePath(id)));
+            var id = IDUtility.Generate(validate: _id => !Directory.Exists(Paths.InstancePath(_id)));
             var path = Paths.InstancePath(id);
             var instance = new UnityInstance(id);
             settingUp.Add(instance.id);

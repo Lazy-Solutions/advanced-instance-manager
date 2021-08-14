@@ -69,7 +69,7 @@ namespace InstanceManager.Utility
                        yield return Copy(Path.Combine(projectPath, "Library", "ArtifactDB"), Path.Combine(targetPath, "Library", "ArtifactDB"));
                        yield return Copy(Path.Combine(projectPath, "Library", "SourceAssetDB"), Path.Combine(targetPath, "Library", "SourceAssetDB"));
 
-                       static Task Copy(string path, string destination) =>
+                       Task Copy(string path, string destination) =>
                            Task.Run(async () =>
                            {
                                await CommandUtility.RunCommand($"copy {path.ToWindowsPath().WithQuotes()} {destination.ToWindowsPath().WithQuotes()}");
@@ -80,7 +80,7 @@ namespace InstanceManager.Utility
                                linkPath: Path.Combine(targetPath, relativePath),
                                path: Path.Combine(projectPath, relativePath));
 
-                       static Task SymLink(string path, string linkPath) =>
+                       Task SymLink(string path, string linkPath) =>
                            Task.Run(async () =>
                            {
                                await CommandUtility.RunCommand($"mklink {(Directory.Exists(path) ? "/j" : "/h")} {linkPath.ToWindowsPath().WithQuotes()} {path.ToWindowsPath().WithQuotes()}");

@@ -223,7 +223,7 @@ namespace InstanceManager.Editor
         static UnityInstance instance;
 
         static View m_view;
-        static View view => m_view ??= mainView;
+        static View view { get { if (m_view is null) m_view = mainView; return m_view; } }
 
         static View mainView { get; } = new MainView();
         static View instanceView { get; } = new InstanceView();
@@ -242,7 +242,8 @@ namespace InstanceManager.Editor
         static void SetView(View view)
         {
 
-            view ??= mainView;
+            if (view is null)
+                view = mainView;
 
             if (view == m_view)
                 return;
