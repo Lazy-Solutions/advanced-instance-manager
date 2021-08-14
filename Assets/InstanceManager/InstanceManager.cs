@@ -34,8 +34,12 @@ namespace InstanceManager
         /// <summary>Gets if the current instance is a secondary instance.</summary>
         public static bool isSecondaryInstance => instance != null;
 
-        /// <summary>Gets the id of the current instance. <see langword="null"/> if primary instance.</summary>
-        public static string id => instance?.id;
+        static string m_ID;
+        /// <summary>Gets the id of the current instance.</summary>
+        public static string id =>
+            isPrimaryInstance
+            ? m_ID
+            : instance?.id;
 
         #region Events
 
@@ -122,6 +126,10 @@ namespace InstanceManager
 
         static void InitializePrimaryInstance()
         {
+
+            m_ID = EditorPrefs.GetString("InstanceManager.PrimaryID", null);
+            if (m_ID is null)
+                EditorPrefs.SetString("InstanceManager.PrimaryID", m_ID = IDUtility.Generate());
 
             EditorApplication.wantsToQuit += () =>
             {

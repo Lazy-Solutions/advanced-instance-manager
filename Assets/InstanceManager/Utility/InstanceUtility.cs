@@ -53,18 +53,21 @@ namespace InstanceManager.Utility
 
         /// <summary>Enumerates all secondary instances for this project.</summary>
         public static IEnumerable<UnityInstance> Enumerate() =>
-              Directory.GetDirectories(Paths.aboveProject).
-              Where(f => Path.GetFileName(f).StartsWith(Application.productName + "﹕")).
-              Select(f => Load(Path.Combine(f, instanceFileName))).
-              OfType<UnityInstance>();
+            Directory.GetDirectories(Paths.aboveProject).
+            Select(f => Load(Path.Combine(f, instanceFileName))).
+            OfType<UnityInstance>().
+            Where(instance => instance.primaryID == InstanceManager.id);
 
-        /// <summary>Create a new secondary instance.</summary>
+        /// <summary>Create a new secondary instance. Returns null if current instance is secondary.</summary>
         public static UnityInstance Create(Action onComplete = null)
         {
 
+            if (InstanceManager.isSecondaryInstance)
+                return null;
+
             var id = IDUtility.Generate(validate: _id => !Directory.Exists(Paths.InstancePath(_id)));
             var path = Paths.InstancePath(id);
-            var instance = new UnityInstance(id);
+            var instance = new UnityInstance(id, InstanceManager.id);
             settingUp.Add(instance.id);
 
             SymLinkUtility.Create(Paths.project, path,
@@ -79,11 +82,12 @@ namespace InstanceManager.Utility
 
         }
 
-        /// <summary>Repairs the instance.</summary>
+        /// <summary>Repairs the instance. No effect if current instance is secondary.</summary>
         public static Task Repair(UnityInstance instance, string path, Action onComplete = null) =>
             ProgressUtility.RunTask(
                displayName: "Repairing instance",
                onComplete: t => onComplete?.Invoke(),
+               canRun: InstanceManager.isPrimaryInstance,
                task: new Task(async () =>
                {
 

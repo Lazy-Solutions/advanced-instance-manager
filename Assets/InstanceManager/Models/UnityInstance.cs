@@ -19,14 +19,16 @@ namespace InstanceManager.Models
         public UnityInstance()
         { }
 
-        public UnityInstance(string id)
+        public UnityInstance(string id, string primaryID)
         {
             m_ID = id;
+            m_primaryID = primaryID;
             needsRepair = InstanceUtility.NeedsRepair(this);
         }
 
         #region Properties
 
+        [SerializeField] private string m_primaryID;
         [SerializeField] private string m_ID;
         [SerializeField] private int m_processID;
         [SerializeField] private string m_preferredLayout = "Default";
@@ -97,6 +99,9 @@ namespace InstanceManager.Models
 
         /// <summary>Gets the id of this instance.</summary>
         public string id => m_ID;
+
+        /// <summary>Gets the primary instance id that this instance is associated with.</summary>
+        public string primaryID => m_primaryID;
 
         /// <summary>Gets the path of this instance.</summary>
         public string path => Paths.InstancePath(id);
