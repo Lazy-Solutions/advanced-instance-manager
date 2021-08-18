@@ -58,7 +58,7 @@ namespace InstanceManager.Editor
                 if (scenesSeparator is null) scenesSeparator.normal.background = EditorGUIUtility.whiteTexture;
 
                 if (moveSceneButton is null) moveSceneButton = new GUIStyle(GUI.skin.button) { fontSize = 18, fixedWidth = 21, fixedHeight = 21, padding = new RectOffset(2, 0, 0, 0) };
-                if (menu is null) menu = new GUIStyle(GUI.skin.button) { fontSize = 20, fixedWidth = 16, fixedHeight = 19 };
+                if (menu is null) menu = new GUIStyle(GUI.skin.button) { fontSize = 20, fixedWidth = 16, fixedHeight = 19, padding = new RectOffset(4, 4, 4, 4) };
 
                 if (header is null) header = new GUIStyle(EditorStyles.label) { fontSize = 20, fixedHeight = 24, padding = new RectOffset(2, 0, -4, 0) };
                 if (folder is null) folder = new GUIStyle(GUI.skin.button) { padding = new RectOffset(2, 2, 2, 2), fixedWidth = 18, fixedHeight = 18 };
