@@ -90,7 +90,7 @@ namespace InstanceManager.Utility
 
                }));
 
-        /// <summary>Deletes a secondary instance from Unity Hub.</summary>
+        /// <summary>Deletes a secondary instance from Unity Hub. Only windows is currently supported.</summary>
         public static Task DeleteHubEntry(string instancePath, Action onComplete = null, bool hideProgress = false) =>
             ProgressUtility.RunTask(
                displayName: "Deleting hub entry",
@@ -98,6 +98,7 @@ namespace InstanceManager.Utility
                hideProgress: hideProgress,
                task: new Task(() =>
                {
+#if UNITY_EDITOR_WIN
                    using (var key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"SOFTWARE\Unity Technologies\Unity Editor 5.x", writable: true))
                        foreach (var name in key.GetValueNames().Where(n => n.StartsWith("RecentlyUsedProjectPaths")))
                        {
@@ -105,6 +106,7 @@ namespace InstanceManager.Utility
                            if (value.StartsWith(instancePath.ToCrossPlatformPath()))
                                key.DeleteValue(name);
                        }
+#endif
                }));
 
         /// <summary>Deletes a secondary instance.</summary>
@@ -117,7 +119,7 @@ namespace InstanceManager.Utility
                task: new Task(() =>
                    CommandUtility.RunCommand(
                        windows: $"rmdir /s/q {path.ToWindowsPath().WithQuotes()}",
-                       linux: $"rm -r {path.WithQuotes()}")));
+                       linux: $"rmdir -r {path.WithQuotes()}")));
 
     }
 
