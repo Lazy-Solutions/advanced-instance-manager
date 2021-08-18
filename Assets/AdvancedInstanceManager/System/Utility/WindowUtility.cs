@@ -6,6 +6,8 @@ using UnityEditorInternal;
 namespace InstanceManager.Utility
 {
 
+#if UNITY_EDITOR_WIN
+
     /// <summary>Provides utility functions for working with windows.</summary>
     static class WindowUtility
     {
@@ -102,5 +104,7 @@ namespace InstanceManager.Utility
         }
 
     }
+    
+#endif
 
 }

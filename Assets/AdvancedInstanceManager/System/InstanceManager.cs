@@ -115,7 +115,9 @@ namespace InstanceManager
         static void OnLoad()
         {
 
+#if UNITY_EDITOR_WIN
             WindowUtility.Initialize();
+#endif
 
             if (isPrimaryInstance)
                 InitializePrimaryInstance();
@@ -156,13 +158,13 @@ namespace InstanceManager
             {
                 InstanceUtility.SetLocked(false);
             };
-
+#if UNITY_EDITOR_WIN
             EditorApplication.playModeStateChanged += (state) =>
             {
                 if (state == PlayModeStateChange.EnteredPlayMode)
                     WindowUtility.StopTaskbarFromFlashing();
             };
-
+#endif
             onSecondInstanceStarted?.Invoke();
 
         }
