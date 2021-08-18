@@ -13,7 +13,8 @@ namespace InstanceManager.Utility
         public static bool OnOpen(int instanceID, int line)
         {
 
-            if (InstanceManager.isSecondaryInstance && EditorUtility.InstanceIDToObject(instanceID) is MonoScript script)
+            if (InstanceManager.isSecondaryInstance && InstanceManager.instance.openEditorInPrimaryEditor &&
+                EditorUtility.InstanceIDToObject(instanceID) is MonoScript script)
             {
 
                 Process.Start("devenv",

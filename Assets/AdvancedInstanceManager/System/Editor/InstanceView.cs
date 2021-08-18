@@ -20,6 +20,10 @@ namespace InstanceManager.Editor
             public override Vector2? minSize => new Vector2(450, 82);
 
             const float textFieldWidth = 200;
+            const float popupWidth = 204;
+
+            static readonly string[] playModeOptions = { "When primary does", "Manually" };
+            static readonly string[] editorOptions = { "Primary editor", "Secondary editor" };
 
             Color scenesSeparator = new Color32(100, 100, 100, 32);
 
@@ -57,10 +61,11 @@ namespace InstanceManager.Editor
 
                 EditorGUILayout.BeginVertical(Style.secondaryInstanceMargin);
                 Header();
-                Layout();
                 DisplayName();
-                Scenes();
+                Layout();
                 AutoPlayMode();
+                OpenPrimaryEditor();
+                Scenes();
                 EditorGUILayout.EndVertical();
 
                 if (EditorGUI.EndChangeCheck())
@@ -105,7 +110,7 @@ namespace InstanceManager.Editor
             void DisplayName()
             {
 
-                EditorGUILayout.BeginHorizontal(Style.elementMargin);
+                EditorGUILayout.BeginHorizontal(Style.elementMargin12);
                 EditorGUILayout.LabelField("Display name:");
                 instance.displayName = GUIExt.TextField(instance.displayName, Style.searchBox, instance.id, GUILayout.Width(textFieldWidth));
                 EditorGUILayout.EndHorizontal();
@@ -115,11 +120,13 @@ namespace InstanceManager.Editor
             void Layout()
             {
 
-                EditorGUILayout.BeginHorizontal(Style.elementMargin);
+                EditorGUILayout.BeginHorizontal(Style.elementMargin12);
+
+                EditorGUILayout.LabelField(Content.preferredLayout);
 
                 var i = Array.IndexOf(layouts, instance.preferredLayout ?? "Default");
                 if (i == -1) i = 0;
-                instance.preferredLayout = layouts[EditorGUILayout.Popup("Preferred layout:", i, layouts)];
+                instance.preferredLayout = layouts[EditorGUILayout.Popup(i, layouts, GUILayout.Width(popupWidth))];
 
                 if (InstanceManager.isSecondaryInstance && GUILayout.Button(Content.apply, GUILayout.ExpandWidth(false)))
                 {
@@ -134,11 +141,26 @@ namespace InstanceManager.Editor
             void AutoPlayMode()
             {
 
-                EditorGUILayout.BeginHorizontal();
+                EditorGUILayout.BeginHorizontal(Style.elementMargin0);
 
-                var contentSize = EditorStyles.label.CalcSize(Content.autoPlayMode);
-                EditorGUILayout.LabelField(Content.autoPlayMode, GUILayout.Width(contentSize.x));
-                instance.enterPlayModeAutomatically = EditorGUILayout.Toggle(instance.enterPlayModeAutomatically);
+                EditorGUILayout.LabelField(Content.autoPlayMode);
+
+                var i = instance.enterPlayModeAutomatically ? 0 : 1;
+                instance.enterPlayModeAutomatically = EditorGUILayout.Popup(i, playModeOptions, GUILayout.Width(popupWidth)) == 0;
+
+                EditorGUILayout.EndHorizontal();
+
+            }
+
+            void OpenPrimaryEditor()
+            {
+
+                EditorGUILayout.BeginHorizontal(Style.elementMargin0);
+
+                EditorGUILayout.LabelField(Content.openPrimaryEditor);
+
+                var i = instance.openEditorInPrimaryEditor ? 0 : 1;
+                instance.openEditorInPrimaryEditor = EditorGUILayout.Popup(i, editorOptions, GUILayout.Width(popupWidth)) == 0;
 
                 EditorGUILayout.EndHorizontal();
 
@@ -152,7 +174,7 @@ namespace InstanceManager.Editor
                 if (scenes == null)
                     RefreshScenes();
 
-                EditorGUILayout.BeginVertical(Style.elementMargin);
+                EditorGUILayout.BeginVertical(Style.elementMargin12);
 
                 EditorGUILayout.BeginHorizontal();
 

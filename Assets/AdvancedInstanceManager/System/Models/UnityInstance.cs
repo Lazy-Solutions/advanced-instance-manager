@@ -26,6 +26,42 @@ namespace InstanceManager.Models
             needsRepair = InstanceUtility.NeedsRepair(this);
         }
 
+        #region ISerializationCallbackReceiver
+
+        public void OnBeforeSerialize()
+        {
+
+            //Save instance process id
+            if (InstanceProcess != null)
+            {
+                m_processID = InstanceProcess.Id;
+                InstanceProcess.Exited -= InstanceProcess_Exited;
+            }
+            else
+                m_processID = 0;
+
+        }
+
+        public void OnAfterDeserialize()
+        {
+
+            //Find instance process
+            try
+            {
+                if (m_processID > 0)
+                {
+                    InstanceProcess = Process.GetProcessById(m_processID);
+                    InstanceProcess.Exited += InstanceProcess_Exited;
+                }
+            }
+            catch
+            { }
+
+            m_processID = -1;
+
+        }
+
+        #endregion
         #region Properties
 
         [SerializeField] private string m_primaryID;
@@ -36,6 +72,7 @@ namespace InstanceManager.Models
         [SerializeField] private bool m_enterPlayModeAutomatically = true;
         [SerializeField] private string[] m_scenes;
         [SerializeField] private string m_displayName;
+        [SerializeField] private bool m_openEditorInPrimaryEditor = true;
 
         /// <summary>The paths to this instance file.</summary>
         internal string filePath => Paths.InstancePath(id) + "/" + InstanceUtility.instanceFileName;
@@ -70,13 +107,14 @@ namespace InstanceManager.Models
         public bool autoSync
         {
             get => m_autoSync;
-            set
-            {
-                var prevValue = m_autoSync;
-                m_autoSync = value;
-                if (prevValue != value)
-                    autoSyncChanged?.Invoke();
-            }
+            set => m_autoSync = value;
+        }
+
+        /// <summary>Gets or sets whatever scripts should open in the editor that is associated with the primary instance.</summary>
+        public bool openEditorInPrimaryEditor
+        {
+            get => m_openEditorInPrimaryEditor;
+            set => m_openEditorInPrimaryEditor = value;
         }
 
         /// <summary>Gets or sets whatever this instance should enter / exit play mode automatically when primary instance does.</summary>
@@ -92,14 +130,6 @@ namespace InstanceManager.Models
             get => m_scenes;
             set => m_scenes = value;
         }
-
-        /// <summary>Saves the instance settings to disk.</summary>
-        public void Save() =>
-            InstanceUtility.Save(this);
-
-        /// <summary>Removes the instance from disk.</summary>
-        public void Remove(Action onComplete = null) =>
-            InstanceUtility.Remove(this, onComplete);
 
         /// <summary>Gets whatever this instance is running.</summary>
         public bool isRunning
@@ -127,40 +157,15 @@ namespace InstanceManager.Models
         public Process InstanceProcess { get; private set; }
 
         #endregion
-        #region ISerializationCallbackReceiver
+        #region Methods
 
-        public void OnBeforeSerialize()
-        {
-            if (InstanceProcess != null)
-            {
-                m_processID = InstanceProcess.Id;
-                InstanceProcess.Exited -= InstanceProcess_Exited;
-            }
-            else
-                m_processID = 0;
-        }
+        /// <summary>Saves the instance settings to disk.</summary>
+        public void Save() =>
+            InstanceUtility.Save(this);
 
-        public void OnAfterDeserialize()
-        {
-
-            try
-            {
-                if (m_processID > 0)
-                {
-                    InstanceProcess = Process.GetProcessById(m_processID);
-                    InstanceProcess.Exited += InstanceProcess_Exited;
-                }
-            }
-            catch
-            { }
-
-            m_processID = -1;
-
-        }
-
-        #endregion
-
-        internal static event Action autoSyncChanged;
+        /// <summary>Removes the instance from disk.</summary>
+        public void Remove(Action onComplete = null) =>
+            InstanceUtility.Remove(this, onComplete);
 
         /// <summary>Refreshes this <see cref="UnityInstance"/>.</summary>
         public void Refresh() =>
@@ -201,7 +206,6 @@ namespace InstanceManager.Models
                 Open();
         }
 
-        //CrossProcessEvent quitRequest;
         /// <summary>Open instance.</summary>
         public void Open()
         {
@@ -220,40 +224,6 @@ namespace InstanceManager.Models
             InstanceProcess.Exited += InstanceProcess_Exited;
 
         }
-
-        void SetupScenes()
-        {
-
-            var root = "sceneSetups:";
-            bool isFirstScene = true;
-
-            string GetSceneString(string scenePath)
-            {
-
-                var str =
-                    "- path: " + scenePath + Environment.NewLine +
-                    "  isLoaded: 1" + Environment.NewLine +
-                    "  isActive: " + (isFirstScene ? "1" : "0") + Environment.NewLine +
-                    "  isSubScene: 0";
-
-                isFirstScene = false;
-                return str;
-
-            }
-
-            var path = Path.Combine(this.path, "Library", "LastSceneManagerSetup.txt");
-            if (scenes.Any())
-            {
-                var yaml = root + Environment.NewLine + string.Join(Environment.NewLine, scenes?.Select(GetSceneString) ?? Array.Empty<string>());
-                File.WriteAllText(path, yaml);
-            }
-            else if (File.Exists(path))
-                File.Delete(path);
-
-        }
-
-        void InstanceProcess_Exited(object sender, EventArgs e) =>
-            OnClosed();
 
         /// <summary>Closes this instance.</summary>
         public void Close() =>
@@ -325,6 +295,42 @@ namespace InstanceManager.Models
             }
 
         }
+
+        void InstanceProcess_Exited(object sender, EventArgs e) =>
+            OnClosed();
+
+        void SetupScenes()
+        {
+
+            var root = "sceneSetups:";
+            bool isFirstScene = true;
+
+            string GetSceneString(string scenePath)
+            {
+
+                var str =
+                    "- path: " + scenePath + Environment.NewLine +
+                    "  isLoaded: 1" + Environment.NewLine +
+                    "  isActive: " + (isFirstScene ? "1" : "0") + Environment.NewLine +
+                    "  isSubScene: 0";
+
+                isFirstScene = false;
+                return str;
+
+            }
+
+            var path = Path.Combine(this.path, "Library", "LastSceneManagerSetup.txt");
+            if (scenes.Any())
+            {
+                var yaml = root + Environment.NewLine + string.Join(Environment.NewLine, scenes?.Select(GetSceneString) ?? Array.Empty<string>());
+                File.WriteAllText(path, yaml);
+            }
+            else if (File.Exists(path))
+                File.Delete(path);
+
+        }
+
+        #endregion
 
     }
 

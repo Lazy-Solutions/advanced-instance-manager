@@ -15,7 +15,9 @@ namespace InstanceManager.Utility
         public static string aboveProject { get; } = new DirectoryInfo(project).Parent.FullName.ToCrossPlatformPath();
 
         /// <summary>Gets the path to the specified secondary instance.</summary>
-        public static string InstancePath(string id) => $"{aboveProject}/{Application.productName}﹕{id}";
+        public static string InstancePath(string id) => $"{aboveProject}/{Application.productName}{InstanceSeparatorChar}{id}";
+
+        public const char InstanceSeparatorChar = '﹕';
 
     }
 

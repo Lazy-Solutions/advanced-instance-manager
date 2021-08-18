@@ -17,8 +17,8 @@ namespace InstanceManager
         //TODO: Something is wrong which causes local multiplayer to not assign correct ids to each instance
         //TODO: Check out: https://github.com/VeriorPies/ParrelSync/tree/95a062cb14e669c7834094366611765d3a9658d6
 
+        //TODO: Clean up code
         //TODO: Fix fonts
-        //TODO: Allow set name of instances, that are displayed instead of ID in window
         //TODO: Add multi-platform support
 
         /// <summary>The secondary instances that have been to this project.</summary>

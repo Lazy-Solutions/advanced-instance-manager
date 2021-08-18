@@ -28,7 +28,8 @@ namespace InstanceManager.Editor
             public static GUIStyle removeButton { get; private set; }
 
             public static GUIStyle secondaryInstanceMargin { get; private set; }
-            public static GUIStyle elementMargin { get; private set; }
+            public static GUIStyle elementMargin12 { get; private set; }
+            public static GUIStyle elementMargin0 { get; private set; }
 
             public static GUIStyle searchBox { get; private set; }
             public static GUIStyle scenesList { get; private set; }
@@ -51,7 +52,8 @@ namespace InstanceManager.Editor
                 if (removeButton is null) removeButton = new GUIStyle(GUI.skin.button) { margin = new RectOffset(12, 0, 0, 0) };
 
                 if (secondaryInstanceMargin is null) secondaryInstanceMargin = new GUIStyle() { margin = new RectOffset(6, 6, 6, 6) };
-                if (elementMargin is null) elementMargin = new GUIStyle() { margin = new RectOffset(0, 0, 12, 0) };
+                if (elementMargin0 is null) elementMargin0 = new GUIStyle() { margin = new RectOffset(0, 0, 0, 0) };
+                if (elementMargin12 is null) elementMargin12 = new GUIStyle() { margin = new RectOffset(0, 0, 12, 0) };
 
                 if (searchBox is null) searchBox = new GUIStyle(EditorStyles.textField) { margin = new RectOffset(0, 6, 0, 0) };
                 if (scenesList is null) scenesList = new GUIStyle(GUI.skin.box) { margin = new RectOffset(6, 6, 8, 6) };
@@ -98,6 +100,8 @@ namespace InstanceManager.Editor
             public static GUIContent apply { get; private set; }
             public static GUIContent Apply { get; private set; }
             public static GUIContent autoPlayMode { get; private set; }
+            public static GUIContent openPrimaryEditor { get; private set; }
+            public static GUIContent preferredLayout { get; private set; }
 
             public static GUIContent scenesToOpen { get; private set; }
 
@@ -142,7 +146,9 @@ namespace InstanceManager.Editor
                 if (autoSync is null) autoSync = new GUIContent("Auto sync:");
                 if (apply is null) apply = new GUIContent("apply");
                 if (Apply is null) Apply = new GUIContent("Apply");
-                if (autoPlayMode is null) autoPlayMode = new GUIContent("Automatically enter / exit play mode: ");
+                if (autoPlayMode is null) autoPlayMode = new GUIContent("Enter / exit playmode: ");
+                if (openPrimaryEditor is null) openPrimaryEditor = new GUIContent("Open scripts in: ");
+                if (preferredLayout is null) preferredLayout = new GUIContent("Preferred layout: ");
 
                 if (scenesToOpen is null) scenesToOpen = new GUIContent("Scenes to open:");
 
@@ -179,21 +185,22 @@ namespace InstanceManager.Editor
 
             ReloadInstances();
 
+
             if (InstanceManager.isSecondaryInstance)
                 SetInstance(InstanceManager.id);
+            else
+                SetInstance(PlayerPrefs.GetString("InstanceManagerWindow.SelectedInstance", null));
 
             view.OnEnable();
             Repaint();
 
         }
 
-        internal UnityInstance[] instances;
-        void ReloadInstances() =>
-            instances = InstanceUtility.Enumerate().ToArray();
-
         void OnDisable()
         {
             view.OnDisable();
+            if (InstanceManager.isPrimaryInstance)
+                PlayerPrefs.SetString("InstanceManagerWindow.SelectedInstance", instance?.id ?? null);
             window = null;
         }
 
@@ -214,6 +221,10 @@ namespace InstanceManager.Editor
             EndCheckResize();
 
         }
+
+        internal UnityInstance[] instances;
+        void ReloadInstances() =>
+            instances = InstanceUtility.Enumerate().ToArray();
 
         #region View
 
