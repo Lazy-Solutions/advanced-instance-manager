@@ -84,7 +84,7 @@ namespace InstanceManager.Utility
                            Task.Run(() =>
                                CommandUtility.RunCommand(
                                    windows: $"mklink {(Directory.Exists(path) ? "/j" : "/h")} {linkPath.ToWindowsPath().WithQuotes()} {path.ToWindowsPath().WithQuotes()}",
-                                   linux: $"ln -s {path.WithQuotes()} {linkPath.WithQuotes()}");
+                                   linux: $"ln -s {path.WithQuotes()} {linkPath.WithQuotes()}"));
 
                    }
 
@@ -117,7 +117,7 @@ namespace InstanceManager.Utility
                task: new Task(() =>
                    CommandUtility.RunCommand(
                        windows: $"rmdir /s/q {path.ToWindowsPath().WithQuotes()}",
-                       linux: $"rm -r {path.WithQuotes()}"));
+                       linux: $"rm -r {path.WithQuotes()}")));
 
     }
 
