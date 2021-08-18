@@ -8,8 +8,8 @@ namespace InstanceManager.Utility
     public static class CommandUtility
     {
 
-        /// <summary>Runs the command in the system terminal.</summary>
-        public static Task<int> RunCommand(string command, bool closeWindowWhenDone = true) =>
+        /// <summary>Runs the command in the windows system terminal.</summary>
+        public static Task<int> RunCommandWindows(string command, bool closeWindowWhenDone = true) =>
             Task.Run(() =>
             {
 
@@ -23,6 +23,30 @@ namespace InstanceManager.Utility
                 p.WaitForExit();
                 return p.ExitCode;
 
+            });
+
+        /// <summary>Runs the command in the linux system terminal.</summary>
+        public static Task<int> RunCommandLinux(string command, bool closeWindowWhenDone = true) =>
+            Task.Run(() =>
+            {
+
+                var p = Process.Start(new ProcessStartInfo("/bin/bash", command)
+                {
+                    UseShellExecute = true,
+                    CreateNoWindow = closeWindowWhenDone,
+                    WindowStyle = closeWindowWhenDone ? ProcessWindowStyle.Hidden : ProcessWindowStyle.Normal
+                });
+
+                p.WaitForExit();
+                return p.ExitCode;
+
+            });
+
+        /// <summary>Runs the command in the osx system terminal.</summary>
+        public static Task<int> RunCommandOSX(string command, bool closeWindowWhenDone = true) =>
+            Task.Run(() =>
+            {
+                return 0;
             });
 
     }

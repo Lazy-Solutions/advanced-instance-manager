@@ -70,10 +70,15 @@ namespace InstanceManager.Utility
                        yield return Copy(Path.Combine(projectPath, "Library", "SourceAssetDB"), Path.Combine(targetPath, "Library", "SourceAssetDB"));
 
                        Task Copy(string path, string destination) =>
-                           Task.Run(async () =>
-                           {
-                               await CommandUtility.RunCommand($"copy {path.ToWindowsPath().WithQuotes()} {destination.ToWindowsPath().WithQuotes()}");
-                           });
+                           Task.Run(() =>
+#if UNITY_EDITOR_WIN
+                           CommandUtility.RunCommandWindows($"copy {path.ToWindowsPath().WithQuotes()} {destination.ToWindowsPath().WithQuotes()}")
+#elif UNITY_EDITOR_LINUX
+                           CommandUtility.RunCommandWindows($"cp {path.WithQuotes()} {destination.WithQuotes()}")
+#elif UNITY_EDITOR_OSX
+                           Debug.LogWarning("OSX not yet supported.");
+#endif
+                           );
 
                        Task SymLinkRelative(string relativePath) =>
                            SymLink(
@@ -81,9 +86,15 @@ namespace InstanceManager.Utility
                                path: Path.Combine(projectPath, relativePath));
 
                        Task SymLink(string path, string linkPath) =>
-                           Task.Run(async () =>
+                           Task.Run(() =>
                            {
-                               await CommandUtility.RunCommand($"mklink {(Directory.Exists(path) ? "/j" : "/h")} {linkPath.ToWindowsPath().WithQuotes()} {path.ToWindowsPath().WithQuotes()}");
+#if UNITY_EDITOR_WIN
+                               CommandUtility.RunCommandWindows($"mklink {(Directory.Exists(path) ? "/j" : "/h")} {linkPath.ToWindowsPath().WithQuotes()} {path.ToWindowsPath().WithQuotes()}");
+#elif UNITY_EDITOR_LINUX
+                               CommandUtility.RunCommandWindows($"ln -s {path.WithQuotes()} {linkPath.WithQuotes()}");
+#elif UNITY_EDITOR_OSX
+                               Debug.LogWarning("OSX not yet supported.");
+#endif
                            });
 
                    }
@@ -114,7 +125,15 @@ namespace InstanceManager.Utility
                onComplete: (t) => onComplete?.Invoke(),
                hideProgress: hideProgress,
                //Deleting with cmd, which prevents 'Directory not empty error', for Directory.Delete(path, recursive: true)
-               task: new Task(() => CommandUtility.RunCommand($"rmdir /s/q {path.ToWindowsPath().WithQuotes()}")));
+               task: new Task(() =>
+#if UNITY_EDITOR_WIN
+        CommandUtility.RunCommandWindows($"rmdir /s/q {path.ToWindowsPath().WithQuotes()}")
+#elif UNITY_EDITOR_LINUX
+        CommandUtility.RunCommandWindows($"rm -r {path.WithQuotes()}")
+#elif UNITY_EDITOR_OSX
+        Debug.LogWarning("OSX not yet supported.");
+#endif
+               ));
 
     }
 
