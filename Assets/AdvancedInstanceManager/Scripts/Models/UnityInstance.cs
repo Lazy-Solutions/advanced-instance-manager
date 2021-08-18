@@ -35,6 +35,7 @@ namespace InstanceManager.Models
         [SerializeField] private bool m_autoSync = true;
         [SerializeField] private bool m_enterPlayModeAutomatically = true;
         [SerializeField] private string[] m_scenes;
+        [SerializeField] private string m_displayName;
 
         /// <summary>The paths to this instance file.</summary>
         internal string filePath => Paths.InstancePath(id) + "/" + InstanceUtility.instanceFileName;
@@ -42,8 +43,21 @@ namespace InstanceManager.Models
         /// <summary>The paths to this instance file.</summary>
         internal string lockPath => Paths.InstancePath(id) + "/" + InstanceUtility.instanceFileName + "-lock";
 
-        /// <summary>Gets if this process needs repairing.</summary>
+        /// <summary>Gets if this instance needs repairing.</summary>
         public bool needsRepair { get; }
+
+        /// <summary>The display name of this instance.</summary>
+        public string displayName
+        {
+            get => m_displayName;
+            set => m_displayName = value;
+        }
+
+        /// <summary>Gets either <see cref="displayName"/>, or <see cref="id"/> depending on whatever <see cref="displayName"/> has value.</summary>
+        public string effectiveDisplayName =>
+            string.IsNullOrWhiteSpace(displayName)
+            ? id
+            : displayName;
 
         /// <summary>Gets or sets the window layout.</summary>
         public string preferredLayout

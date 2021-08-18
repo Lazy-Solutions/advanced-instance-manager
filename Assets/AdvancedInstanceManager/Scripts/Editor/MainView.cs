@@ -79,19 +79,19 @@ namespace InstanceManager.Editor
 
             void DrawInstanceRow(UnityInstance instance) =>
                 DrawInstanceRow(
-                    id: instance.id,
+                    name: instance.effectiveDisplayName,
                     status: instance.isRunning ? Content.running : Content.notRunning,
                     openButtonValue: instance.isRunning,
                     isEnabled: !instance.isSettingUp,
                     instance);
 
-            void DrawInstanceRow(string id, GUIContent status, bool? openButtonValue = null, bool isEnabled = true, UnityInstance instance = null)
+            void DrawInstanceRow(string name, GUIContent status, bool? openButtonValue = null, bool isEnabled = true, UnityInstance instance = null)
             {
 
                 GUIExt.BeginEnabledScope(isEnabled);
 
                 EditorGUILayout.BeginHorizontal(Style.row);
-                EditorGUILayout.LabelField(id);
+                EditorGUILayout.LabelField(name);
                 GUILayout.Label(status, GUILayout.ExpandWidth(false));
 
                 if (!openButtonValue.HasValue)
