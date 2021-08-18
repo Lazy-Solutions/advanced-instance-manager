@@ -17,7 +17,8 @@ namespace InstanceManager
         //TODO: Something is wrong which causes local multiplayer to not assign correct ids to each instance
         //TODO: Check out: https://github.com/VeriorPies/ParrelSync/tree/95a062cb14e669c7834094366611765d3a9658d6
 
-        //TODO: After release:
+        //TODO: Fix fonts
+        //TODO: Allow set name of instances, that are displayed instead of ID in window
         //TODO: Add multi-platform support
 
         /// <summary>The secondary instances that have been to this project.</summary>
@@ -122,15 +123,16 @@ namespace InstanceManager
                 InitializeSecondInstance();
 
             SetupCrossProcessEvents(isPrimaryInstance);
+            Debug.Log(id);
 
         }
 
         static void InitializePrimaryInstance()
         {
 
-            m_ID = EditorPrefs.GetString("InstanceManager.PrimaryID", null);
-            if (m_ID is null)
-                EditorPrefs.SetString("InstanceManager.PrimaryID", m_ID = IDUtility.Generate());
+            m_ID = PlayerPrefs.GetString("InstanceManager.PrimaryID", null);
+            if (string.IsNullOrWhiteSpace(m_ID))
+                PlayerPrefs.SetString("InstanceManager.PrimaryID", m_ID = IDUtility.Generate());
 
             EditorApplication.wantsToQuit += () =>
             {
