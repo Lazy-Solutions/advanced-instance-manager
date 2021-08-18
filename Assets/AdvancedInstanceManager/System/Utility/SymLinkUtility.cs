@@ -117,9 +117,9 @@ namespace InstanceManager.Utility
                hideProgress: hideProgress,
                //Deleting with cmd, which prevents 'Directory not empty error', for Directory.Delete(path, recursive: true)
                task: new Task(() =>
-                   CommandUtility.RunCommand(
+                   CommandUtility.RunCommand(closeWindowWhenDone: false,
                        windows: $"rmdir /s/q {path.ToWindowsPath().WithQuotes()}",
-                       linux: $"rmdir -r {path.WithQuotes()}")));
+                       linux: $"rm -rf {path.WithQuotes()}")));
 
     }
 
