@@ -25,7 +25,7 @@ namespace InstanceManager.Utility
             Task.Run(() =>
             {
 
-                var p = Process.Start(new ProcessStartInfo("cmd", (closeWindowWhenDone ? "/c" : "/k ") + command)
+                var p = Process.Start(new ProcessStartInfo("cmd", (closeWindowWhenDone ? "/c " : "/k ") + command)
                 {
                     UseShellExecute = true,
                     CreateNoWindow = closeWindowWhenDone,
@@ -42,7 +42,7 @@ namespace InstanceManager.Utility
             Task.Run(() =>
             {
 
-                var p = Process.Start(new ProcessStartInfo("/bin/bash", command)
+                var p = Process.Start(new ProcessStartInfo("/bin/bash", "-c " + command)
                 {
                     UseShellExecute = true,
                     CreateNoWindow = closeWindowWhenDone,
