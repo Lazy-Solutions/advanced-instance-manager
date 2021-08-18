@@ -123,7 +123,6 @@ namespace InstanceManager
                 InitializeSecondInstance();
 
             SetupCrossProcessEvents(isPrimaryInstance);
-            Debug.Log(id);
 
         }
 
