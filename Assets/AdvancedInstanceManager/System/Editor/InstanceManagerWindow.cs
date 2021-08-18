@@ -7,6 +7,7 @@ using UnityEngine;
 namespace InstanceManager.Editor
 {
 
+    /// <summary>The instance manager window.</summary>
     public partial class InstanceManagerWindow : EditorWindow
     {
 
@@ -99,7 +100,6 @@ namespace InstanceManager.Editor
             public static GUIContent autoPlayMode { get; private set; }
 
             public static GUIContent scenesToOpen { get; private set; }
-            public static GUIContent search { get; private set; }
 
             public static GUIContent up { get; private set; }
             public static GUIContent down { get; private set; }
@@ -145,7 +145,6 @@ namespace InstanceManager.Editor
                 if (autoPlayMode is null) autoPlayMode = new GUIContent("Automatically enter / exit play mode: ");
 
                 if (scenesToOpen is null) scenesToOpen = new GUIContent("Scenes to open:");
-                if (search is null) search = new GUIContent(" Search:");
 
                 if (up is null) up = new GUIContent("▴");
                 if (down is null) down = new GUIContent("▾");
@@ -188,7 +187,7 @@ namespace InstanceManager.Editor
 
         }
 
-        public UnityInstance[] instances;
+        internal UnityInstance[] instances;
         void ReloadInstances() =>
             instances = InstanceUtility.Enumerate().ToArray();
 
@@ -197,8 +196,6 @@ namespace InstanceManager.Editor
             view.OnDisable();
             window = null;
         }
-
-        static readonly Color overlay = new Color(0, 0, 0, 0.5f);
 
         void OnGUI()
         {
@@ -229,7 +226,7 @@ namespace InstanceManager.Editor
         static View instanceView { get; } = new InstanceView();
         //static View settingsView { get; } = new SettingsView();
 
-        public class View
+        public abstract class View
         {
             public virtual void OnGUI() { }
             public virtual void OnFocus() { }
@@ -271,7 +268,7 @@ namespace InstanceManager.Editor
         #endregion
         #region Check resize
 
-        public bool hasResized { get; private set; }
+        internal bool hasResized { get; private set; }
 
         Rect prevPos;
         protected void BeginCheckResize()

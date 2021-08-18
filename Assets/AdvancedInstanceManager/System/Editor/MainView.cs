@@ -11,6 +11,7 @@ namespace InstanceManager.Editor
     public partial class InstanceManagerWindow
     {
 
+        /// <summary>The main view, listing the instances.</summary>
         public class MainView : View
         {
 

@@ -10,6 +10,7 @@ namespace InstanceManager.Editor
     public partial class InstanceManagerWindow
     {
 
+        /// <summary>The instance view, for changing instance options.</summary>
         public class InstanceView : View
         {
 
@@ -17,6 +18,8 @@ namespace InstanceManager.Editor
             (string path, SceneAsset asset, int index)[] addedScenes;
             (string path, SceneAsset asset, int index)[] scenes;
             public override Vector2? minSize => new Vector2(450, 82);
+
+            const float textFieldWidth = 200;
 
             Color scenesSeparator = new Color32(100, 100, 100, 32);
 
@@ -55,6 +58,7 @@ namespace InstanceManager.Editor
                 EditorGUILayout.BeginVertical(Style.secondaryInstanceMargin);
                 Header();
                 Layout();
+                DisplayName();
                 Scenes();
                 AutoPlayMode();
                 EditorGUILayout.EndVertical();
@@ -95,6 +99,16 @@ namespace InstanceManager.Editor
                 }
 
                 GUILayout.EndHorizontal();
+
+            }
+
+            void DisplayName()
+            {
+
+                EditorGUILayout.BeginHorizontal(Style.elementMargin);
+                EditorGUILayout.LabelField("Display name:");
+                instance.displayName = GUIExt.TextField(instance.displayName, Style.searchBox, instance.id, GUILayout.Width(textFieldWidth));
+                EditorGUILayout.EndHorizontal();
 
             }
 
@@ -141,20 +155,13 @@ namespace InstanceManager.Editor
                 EditorGUILayout.BeginVertical(Style.elementMargin);
 
                 EditorGUILayout.BeginHorizontal();
+
                 GUILayout.Label(Content.scenesToOpen);
+
                 GUILayout.FlexibleSpace();
                 GUILayout.FlexibleSpace();
-                q = EditorGUILayout.TextField(q, Style.searchBox);
 
-                if (string.IsNullOrEmpty(q))
-                {
-
-                    var r = GUILayoutUtility.GetLastRect();
-                    GUIExt.BeginColorScope(Color.gray);
-                    GUI.Label(r, Content.search);
-                    GUIExt.EndColorScope();
-
-                }
+                q = GUIExt.TextField(q, Style.searchBox, "Search:", GUILayout.Width(textFieldWidth));
 
                 EditorGUILayout.EndHorizontal();
 

@@ -9,6 +9,7 @@ namespace InstanceManager.Editor
     public static class GUIExt
     {
 
+        //Called by ColorScope and EnabledScope
         static void Update()
         {
             prevEnabled = null;
@@ -80,6 +81,7 @@ namespace InstanceManager.Editor
         }
 
         #endregion
+        #region GenericMenu item
 
         /// <inheritdoc cref="AddItem(GenericMenu, GUIContent, Action{bool}, bool, bool, GUIContent)"/>
         public static void AddItem(this GenericMenu menu, GUIContent content, Action action, bool enabled = true, bool isChecked = false, GUIContent offContent = null) =>
@@ -98,6 +100,31 @@ namespace InstanceManager.Editor
             else
                 menu.AddDisabledItem(offContent ?? content, isChecked);
         }
+
+        #endregion
+        #region WatermarkTextField
+
+        /// <summary>Creates a <see cref="EditorGUILayout.TextField(GUIContent, string, GUILayoutOption[])"/>, but with a watermark.</summary>
+        public static string TextField(string text, GUIStyle style, string watermark = null, params GUILayoutOption[] options)
+        {
+
+            text = EditorGUILayout.TextField(text, style, options);
+
+            if (string.IsNullOrEmpty(text) && watermark != null)
+            {
+
+                var r = GUILayoutUtility.GetLastRect();
+                BeginColorScope(Color.gray);
+                GUI.Label(new Rect(r.x + 3, r.y, r.width, r.height), watermark);
+                EndColorScope();
+
+            }
+
+            return text;
+
+        }
+
+        #endregion
 
         /// <summary>
         /// <para>Unfocuses elements when blank area of <see cref="UnityEditor.EditorWindow"/> clicked.</para>
