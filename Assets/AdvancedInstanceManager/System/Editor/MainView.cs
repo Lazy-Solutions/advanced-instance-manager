@@ -135,7 +135,7 @@ namespace InstanceManager.Editor
                     menu.AddItem(Content.showInExplorer, false, () =>
                     CommandUtility.RunCommand(
                         windows: "explorer " + instance.path.ToWindowsPath().WithQuotes(),
-                        linux: "xdg-open " + instance.path.WithQuotes());
+                        linux: "xdg-open " + instance.path.WithQuotes()));
 
                     menu.AddItem(Content.options, () => SetInstance(instance.id), enabled: !instance.isRunning);
                     menu.AddSeparator(string.Empty);
