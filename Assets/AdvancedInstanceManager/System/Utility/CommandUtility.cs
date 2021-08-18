@@ -8,6 +8,18 @@ namespace InstanceManager.Utility
     public static class CommandUtility
     {
 
+        /// <summary>Runs a command in the system terminal, chosen depending on which platform we're currently running on.</summary>
+        public static Task<int> RunCommand(string windows = null, string linux = null, string osx = null, bool closeWindowWhenDone = true)
+        {
+#if UNITY_EDITOR_WIN
+            return RunCommandWindows(windows, closeWindowWhenDone);
+#elif UNITY_EDITOR_LINUX
+            return RunCommandLinux(linux, closeWindowWhenDone);
+#elif UNITY_EDITOR_OSX
+            return RunCommandOSX(osx, closeWindowWhenDone);
+#endif
+        }
+
         /// <summary>Runs the command in the windows system terminal.</summary>
         public static Task<int> RunCommandWindows(string command, bool closeWindowWhenDone = true) =>
             Task.Run(() =>
