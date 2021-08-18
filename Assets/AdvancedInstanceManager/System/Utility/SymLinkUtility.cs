@@ -69,12 +69,6 @@ namespace InstanceManager.Utility
                        yield return Copy(Path.Combine(projectPath, "Library", "ArtifactDB"), Path.Combine(targetPath, "Library", "ArtifactDB"));
                        yield return Copy(Path.Combine(projectPath, "Library", "SourceAssetDB"), Path.Combine(targetPath, "Library", "SourceAssetDB"));
 
-                       Task Copy(string path, string destination) =>
-                            Task.Run(() =>
-                                CommandUtility.RunCommand(
-                                    windows: $"copy {path.ToWindowsPath().WithQuotes()} {destination.ToWindowsPath().WithQuotes()}",
-                                    linux: $"cp {path.WithQuotes()} {destination.WithQuotes()}"));
-
                        Task SymLinkRelative(string relativePath) =>
                            SymLink(
                                linkPath: Path.Combine(targetPath, relativePath),
@@ -85,6 +79,12 @@ namespace InstanceManager.Utility
                                CommandUtility.RunCommand(
                                    windows: $"mklink {(Directory.Exists(path) ? "/j" : "/h")} {linkPath.ToWindowsPath().WithQuotes()} {path.ToWindowsPath().WithQuotes()}",
                                    linux: $"ln -s {path.WithQuotes()} {linkPath.WithQuotes()}"));
+
+                       Task Copy(string path, string destination) =>
+                            Task.Run(() =>
+                                CommandUtility.RunCommand(
+                                    windows: $"copy {path.ToWindowsPath().WithQuotes()} {destination.ToWindowsPath().WithQuotes()}",
+                                    linux: $"cp {path.WithQuotes()} {destination.WithQuotes()}"));
 
                    }
 

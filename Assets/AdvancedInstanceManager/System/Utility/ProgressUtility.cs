@@ -45,6 +45,7 @@ namespace InstanceManager.Utility
             }
 
             EditorApplication.delayCall += () => onComplete?.Invoke(task);
+            EditorApplication.QueuePlayerLoopUpdate();
 
 #if UNITY_2020
             if (!hideProgress)

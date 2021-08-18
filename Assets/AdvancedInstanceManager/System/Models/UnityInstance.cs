@@ -211,8 +211,6 @@ namespace InstanceManager.Models
 
             InstanceUtility.UnlockInstance(this);
             SetupScenes();
-            //quitRequest = new CrossProcessEvent($"QuitRequest ({id})");
-            //quitRequest.InitializeHost();
             InstanceProcess = Process.Start(new ProcessStartInfo(
                 fileName: EditorApplication.applicationPath,
                 arguments: "-projectPath " + path.WithQuotes()));
@@ -278,11 +276,8 @@ namespace InstanceManager.Models
 
                 //Send quit request since unity won't save settings unless EditorApplication.Exit() is called.
                 //Process.Close() does nothing and Process.CloseMainWindow() closes, but does not save
-                //quitRequest = new CrossProcessEvent($"QuitRequest ({id})");
-                //quitRequest.InitializeHost();
 
                 process.Exited += Exited;
-                //quitRequest.RaiseEvent();
                 CrossProcessEventUtility.Send(this, "Quit");
 
                 //In the off chance that the event was not registered in the secondary instance, lets kill process after 5 seconds

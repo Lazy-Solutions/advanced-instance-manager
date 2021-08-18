@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Threading.Tasks;
+using Debug = UnityEngine.Debug;
 
 namespace InstanceManager.Utility
 {
@@ -27,12 +28,17 @@ namespace InstanceManager.Utility
 
                 var p = Process.Start(new ProcessStartInfo("cmd", (closeWindowWhenDone ? "/c " : "/k ") + command)
                 {
-                    UseShellExecute = true,
+                    UseShellExecute = true,                 
+                    RedirectStandardError = true,
                     CreateNoWindow = closeWindowWhenDone,
                     WindowStyle = closeWindowWhenDone ? ProcessWindowStyle.Hidden : ProcessWindowStyle.Normal
                 });
 
                 p.WaitForExit();
+
+if (!p.StandardError.EndOfStream)
+                Debug.LogError(p.StandardError.ReadToEnd());
+
                 return p.ExitCode;
 
             });
@@ -41,15 +47,22 @@ namespace InstanceManager.Utility
         public static Task<int> RunCommandLinux(string command, bool closeWindowWhenDone = true) =>
             Task.Run(() =>
             {
-
-                var p = Process.Start(new ProcessStartInfo("/bin/bash", "-c " + command)
+                
+                command = command.Replace("\"", "\\\"");
+                
+                var p = Process.Start(new ProcessStartInfo("/bin/bash", "-c \"" + command + "\"")
                 {
-                    UseShellExecute = true,
+                    UseShellExecute = false,
+                    RedirectStandardError = true,
                     CreateNoWindow = closeWindowWhenDone,
                     WindowStyle = closeWindowWhenDone ? ProcessWindowStyle.Hidden : ProcessWindowStyle.Normal
                 });
 
                 p.WaitForExit();
+                
+                if (!p.StandardError.EndOfStream)
+                    Debug.LogError(p.StandardError.ReadToEnd());
+
                 return p.ExitCode;
 
             });
