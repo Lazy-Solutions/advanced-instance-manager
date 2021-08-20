@@ -1,5 +1,6 @@
 ﻿using InstanceManager.Models;
 using InstanceManager.Utility;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using UnityEditor;
@@ -17,7 +18,10 @@ namespace InstanceManager.Editor
 
             public override Vector2? minSize => new Vector2(450, 350);
 
-            Color background = new Color32(56, 56, 56, 255);
+            Color background => EditorGUIUtility.isProSkin
+                ? new Color32(60, 60, 60, 255)
+                : new Color32(194, 194, 194, 255);
+
             Color listBackground = new Color32(40, 40, 40, 255);
             Color line1 = new Color32(35, 35, 35, 0);
             Color line2 = new Color32(35, 35, 35, 255);
@@ -44,13 +48,13 @@ namespace InstanceManager.Editor
                 {
                     var scroll = scrollPos;
                     scrollPos = new Vector2(0, float.MaxValue);
-                    scrollPos = EditorGUILayout.BeginScrollView(scrollPos);
+                    scrollPos = EditorGUILayout.BeginScrollView(scrollPos, GUIStyle.none, GUI.skin.verticalScrollbar);
                     maxScroll = scrollPos;
                     scrollPos = scroll;
                     isScrollbarInitialized = true;
                 }
                 else
-                    scrollPos = EditorGUILayout.BeginScrollView(scrollPos);
+                    scrollPos = EditorGUILayout.BeginScrollView(scrollPos, GUIStyle.none, GUI.skin.verticalScrollbar);
 
             }
 
@@ -61,7 +65,7 @@ namespace InstanceManager.Editor
                 GUI.DrawTexture(new Rect(0, 0, position.width, position.height), EditorGUIUtility.whiteTexture, ScaleMode.StretchToFill);
                 GUIExt.EndColorScope();
 
-                DrawInstanceRow("ID:", Content.status);
+                DrawInstanceRow("Name:", Content.status, isHeader: true);
 
                 BeginScrollbar();
 
@@ -86,14 +90,44 @@ namespace InstanceManager.Editor
                     isEnabled: !instance.isSettingUp,
                     instance);
 
-            void DrawInstanceRow(string name, GUIContent status, bool? openButtonValue = null, bool isEnabled = true, UnityInstance instance = null)
+            List<float> statusLabelPos = new List<float>();
+            void DrawInstanceRow(string name, GUIContent status, bool? openButtonValue = null, bool isEnabled = true, UnityInstance instance = null, bool isHeader = false)
             {
+
+                var r = GUILayoutUtility.GetRect(Screen.width, 0);
 
                 GUIExt.BeginEnabledScope(isEnabled);
 
                 EditorGUILayout.BeginHorizontal(Style.row);
+
+                GUIExt.BeginColorScope(background);
+                GUI.DrawTexture(new Rect(0, r.yMin, window.maxSize.x - 1, Style.row.fixedHeight), EditorGUIUtility.whiteTexture, ScaleMode.StretchToFill);
+                GUIExt.EndColorScope();
+
                 EditorGUILayout.LabelField(name);
-                GUILayout.Label(status, GUILayout.ExpandWidth(false));
+                if (isHeader)
+                {
+
+                    var pos = !statusLabelPos.Any()
+                        ? position.width - 150
+                        : statusLabelPos.Min();
+
+                    EditorGUILayout.LabelField(GUIContent.none);
+                    r = GUILayoutUtility.GetLastRect();
+                    var width = GUI.skin.label.CalcSize(status).x;
+                    GUI.Label(new Rect(pos, r.y, width, r.height), status);
+                    statusLabelPos.Clear();
+
+                }
+                else
+                {
+
+                    GUILayout.Label(status, GUILayout.ExpandWidth(false));
+
+                    if (Event.current.type == EventType.Repaint)
+                        statusLabelPos.Add(GUILayoutUtility.GetLastRect().x);
+
+                }
 
                 if (!openButtonValue.HasValue)
                     GUILayout.Label(Content.emptyString, GUILayout.ExpandWidth(false));
@@ -107,11 +141,20 @@ namespace InstanceManager.Editor
 
                 menuButtonPressed = openButtonValue.HasValue && GUILayout.Button(Content.menu, Style.menu, GUILayout.ExpandWidth(false));
 
+                GUILayout.Space(6);
+
                 EditorGUILayout.EndHorizontal();
                 if (instance != null)
                     ContextMenu_Item(instance);
 
                 GUIExt.EndEnabledScope();
+
+                if (!isHeader)
+                {
+                    GUIExt.BeginColorScope(listBackground);
+                    GUI.DrawTexture(new Rect(0, r.yMax, window.maxSize.x, 1), EditorGUIUtility.whiteTexture, ScaleMode.StretchToFill);
+                    GUIExt.EndColorScope();
+                }
 
             }
 

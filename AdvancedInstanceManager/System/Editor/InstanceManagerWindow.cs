@@ -48,7 +48,7 @@ namespace InstanceManager.Editor
                 if (margin is null) margin = new GUIStyle() { margin = new RectOffset(12, 12, 12, 12) };
                 if (createButton is null) createButton = new GUIStyle(GUI.skin.button) { padding = new RectOffset(12, 12, 6, 6) };
                 if (row is null) row = new GUIStyle(EditorStyles.toolbar) { padding = new RectOffset(12, 12, 12, 6), fixedHeight = 42 };
-                if (noItemsText is null) noItemsText = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleCenter };
+                if (noItemsText is null) noItemsText = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleCenter, normal = new GUIStyleState() { textColor = new Color(1, 1, 1, 0.75f) } };
                 if (removeButton is null) removeButton = new GUIStyle(GUI.skin.button) { margin = new RectOffset(12, 0, 0, 0) };
 
                 if (secondaryInstanceMargin is null) secondaryInstanceMargin = new GUIStyle() { margin = new RectOffset(6, 6, 6, 6) };
@@ -114,13 +114,12 @@ namespace InstanceManager.Editor
 
             public static GUIContent settingsText { get; private set; }
             public static GUIContent instancesPath { get; private set; }
-            public static GUIContent folder { get; private set; }
             public static GUIContent repair { get; private set; }
 
             public static void Initialize()
             {
 
-                if (status is null) status = new GUIContent("Status:                     ");
+                if (status is null) status = new GUIContent("Status:");
                 if (noInstances is null) noInstances = new GUIContent("No instances found.");
                 if (running is null) running = new GUIContent("Running");
                 if (notRunning is null) notRunning = new GUIContent("Not running");
@@ -161,7 +160,6 @@ namespace InstanceManager.Editor
 
                 if (settingsText is null) settingsText = new GUIContent("Settings");
                 if (instancesPath is null) instancesPath = new GUIContent("Instances path:");
-                if (folder is null) folder = new GUIContent(EditorGUIUtility.IconContent("d_Folder Icon").image, "Pick folder");
 
                 if (repair is null) repair = new GUIContent("Repair");
 

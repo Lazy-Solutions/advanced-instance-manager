@@ -76,19 +76,46 @@ namespace InstanceManager.Utility
 
                        Task SymLink(string path, string linkPath) =>
                            Task.Run(() =>
+                           {
+
+                               if (!File.Exists(path) && !Directory.Exists(path))
+                                   return;
+
                                CommandUtility.RunCommand(
                                    windows: $"mklink {(Directory.Exists(path) ? "/j" : "/h")} {linkPath.ToWindowsPath().WithQuotes()} {path.ToWindowsPath().WithQuotes()}",
-                                   linux: $"ln -s {path.WithQuotes()} {linkPath.WithQuotes()}"));
+                                   linux: $"ln -s {path.WithQuotes()} {linkPath.WithQuotes()}");
+
+                           });
+
 
                        Task Copy(string path, string destination) =>
                             Task.Run(() =>
-                                CommandUtility.RunCommand(
-                                    windows: $"copy {path.ToWindowsPath().WithQuotes()} {destination.ToWindowsPath().WithQuotes()}",
-                                    linux: $"cp {path.WithQuotes()} {destination.WithQuotes()}"));
+                            {
+                                if (File.Exists(path))
+                                    File.Copy(path, destination);
+                                else if (Directory.Exists(path))
+                                    CopyDirectory(path, destination);
+                            });
 
                    }
 
                }));
+
+        static void CopyDirectory(string root, string dest)
+        {
+
+            foreach (var directory in Directory.GetDirectories(root))
+            {
+                var name = Path.GetFileName(directory);
+                if (!Directory.Exists(Path.Combine(dest, name)))
+                    Directory.CreateDirectory(Path.Combine(dest, name));
+                CopyDirectory(directory, Path.Combine(dest, name));
+            }
+
+            foreach (var file in Directory.GetFiles(root))
+                File.Copy(file, Path.Combine(dest, Path.GetFileName(file)));
+
+        }
 
         /// <summary>Deletes a secondary instance from Unity Hub. Only windows is currently supported.</summary>
         public static Task DeleteHubEntry(string instancePath, Action onComplete = null, bool hideProgress = false) =>
@@ -117,7 +144,7 @@ namespace InstanceManager.Utility
                hideProgress: hideProgress,
                //Deleting with cmd, which prevents 'Directory not empty error', for Directory.Delete(path, recursive: true)
                task: new Task(() =>
-                   CommandUtility.RunCommand(closeWindowWhenDone: false,
+                   CommandUtility.RunCommand(
                        windows: $"rmdir /s/q {path.ToWindowsPath().WithQuotes()}",
                        linux: $"rm -rf {path.WithQuotes()}")));
 

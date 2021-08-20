@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Debug = UnityEngine.Debug;
 
@@ -10,34 +11,34 @@ namespace InstanceManager.Utility
     {
 
         /// <summary>Runs a command in the system terminal, chosen depending on which platform we're currently running on. Error is logged in console.</summary>
-        public static Task<int> RunCommand(string windows = null, string linux = null, string osx = null, bool closeWindowWhenDone = true)
+        public static Task<int> RunCommand(string windows = null, string linux = null, string osx = null)
         {
 #if UNITY_EDITOR_WIN
-            return RunCommandWindows(windows, closeWindowWhenDone);
+            return RunCommandWindows(windows);
 #elif UNITY_EDITOR_LINUX
-            return RunCommandLinux(linux, closeWindowWhenDone);
+            return RunCommandLinux(linux);
 #elif UNITY_EDITOR_OSX
-            return RunCommandOSX(osx, closeWindowWhenDone);
+            return RunCommandOSX(osx);
 #endif
         }
 
         /// <summary>Runs the command in the windows system terminal. Error is logged in console.</summary>
-        public static Task<int> RunCommandWindows(string command, bool closeWindowWhenDone = true) =>
+        public static Task<int> RunCommandWindows(string command) =>
             Task.Run(() =>
             {
 
-                using (var p = Process.Start(new ProcessStartInfo("cmd", (closeWindowWhenDone ? "/c " : "/k ") + command)
+                using (var p = Process.Start(new ProcessStartInfo("cmd", "/c " + command)
                 {
-                    UseShellExecute = true,
+                    UseShellExecute = false,
                     RedirectStandardError = true,
-                    CreateNoWindow = closeWindowWhenDone,
-                    WindowStyle = closeWindowWhenDone ? ProcessWindowStyle.Hidden : ProcessWindowStyle.Normal
+                    CreateNoWindow = true,
+                    WindowStyle = ProcessWindowStyle.Hidden
                 }))
                 {
 
                     p.WaitForExit();
                     if (!p.StandardError.EndOfStream)
-                        Debug.LogError(p.StandardError.ReadToEnd());
+                        Debug.LogError($"Command '{command}' failed:" + Environment.NewLine + p.StandardError.ReadToEnd());
 
                     return p.ExitCode;
 
@@ -46,7 +47,7 @@ namespace InstanceManager.Utility
             });
 
         /// <summary>Runs the command in the linux system terminal. Error is logged in console.</summary>
-        public static Task<int> RunCommandLinux(string command, bool closeWindowWhenDone = true) =>
+        public static Task<int> RunCommandLinux(string command) =>
             Task.Run(() =>
             {
 
@@ -54,14 +55,14 @@ namespace InstanceManager.Utility
                 {
                     UseShellExecute = false,
                     RedirectStandardError = true,
-                    CreateNoWindow = closeWindowWhenDone,
-                    WindowStyle = closeWindowWhenDone ? ProcessWindowStyle.Hidden : ProcessWindowStyle.Normal
+                    CreateNoWindow = true,
+                    WindowStyle = ProcessWindowStyle.Hidden
                 }))
                 {
 
                     p.WaitForExit();
                     if (!p.StandardError.EndOfStream)
-                        Debug.LogError(p.StandardError.ReadToEnd());
+                        Debug.LogError($"Command '{command}' failed:" + Environment.NewLine + p.StandardError.ReadToEnd());
 
                     return p.ExitCode;
 

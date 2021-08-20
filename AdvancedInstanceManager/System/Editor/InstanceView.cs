@@ -29,14 +29,17 @@ namespace InstanceManager.Editor
 
             public override void OnEnable()
             {
-                layouts = WindowLayoutUtility.availableLayouts.Select(l => l.name).ToArray();
+                RefreshLayouts();
             }
 
             public override void OnFocus()
             {
-                layouts = WindowLayoutUtility.availableLayouts.Select(l => l.name).ToArray();
+                RefreshLayouts();
                 RefreshScenes();
             }
+
+            void RefreshLayouts() =>
+                layouts = WindowLayoutUtility.availableLayouts.Select(l => l.name).ToArray();
 
             void RefreshScenes()
             {
@@ -58,6 +61,12 @@ namespace InstanceManager.Editor
 
             public override void OnGUI()
             {
+
+                if (instance == null)
+                    ClearInstance();
+
+                if (layouts == null)
+                    RefreshLayouts();
 
                 EditorGUILayout.BeginVertical(Style.secondaryInstanceMargin);
                 Header();
@@ -119,6 +128,9 @@ namespace InstanceManager.Editor
 
             void Layout()
             {
+
+                if (!WindowLayoutUtility.isAvailable)
+                    return;
 
                 EditorGUILayout.BeginHorizontal(Style.elementMargin12);
 

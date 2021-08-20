@@ -37,9 +37,11 @@ namespace InstanceManager.Utility
 
         /// <summary>Finds all available layouts.</summary>
         public static Layout[] availableLayouts =>
-            Directory.GetFiles(layoutsPath, "*.wlt").
-            Select(path => new Layout(path)).
-            ToArray();
+            isAvailable
+            ? Directory.GetFiles(layoutsPath, "*.wlt").
+                Select(path => new Layout(path)).
+                ToArray()
+            : Array.Empty<Layout>();
 
         /// <summary>Finds the specified layout by name.</summary>
         public static Layout Find(string name) =>

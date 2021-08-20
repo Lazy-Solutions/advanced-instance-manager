@@ -104,20 +104,22 @@ namespace InstanceManager.Editor
         #endregion
         #region WatermarkTextField
 
+        //A style for grayed out text, we're using this for watermark instead of ColorScope because labels do not use GUI.color in Unity 2018?
+        static GUIStyle grayedOut;
+
         /// <summary>Creates a <see cref="EditorGUILayout.TextField(GUIContent, string, GUILayoutOption[])"/>, but with a watermark.</summary>
         public static string TextField(string text, GUIStyle style, string watermark = null, params GUILayoutOption[] options)
         {
+
+            if (grayedOut == null)
+                grayedOut = new GUIStyle() { normal = new GUIStyleState() { textColor = Color.gray } };
 
             text = EditorGUILayout.TextField(text, style, options);
 
             if (string.IsNullOrEmpty(text) && watermark != null)
             {
-
                 var r = GUILayoutUtility.GetLastRect();
-                BeginColorScope(Color.gray);
-                GUI.Label(new Rect(r.x + 3, r.y, r.width, r.height), watermark);
-                EndColorScope();
-
+                EditorGUI.LabelField(new Rect(r.x + 3, r.y, r.width, r.height), watermark, grayedOut);
             }
 
             return text;
