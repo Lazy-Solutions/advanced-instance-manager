@@ -1,5 +1,6 @@
 ﻿using InstanceManager.Models;
 using InstanceManager.Utility;
+using System.Diagnostics;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
@@ -132,10 +133,7 @@ namespace InstanceManager.Editor
                         menu.AddItem(Content.close, instance.Close, enabled: !instance.needsRepair);
 
                     menu.AddSeparator(string.Empty);
-                    menu.AddItem(Content.showInExplorer, false, () =>
-                    CommandUtility.RunCommand(
-                        windows: "explorer " + instance.path.ToWindowsPath().WithQuotes(),
-                        linux: "xdg-open " + instance.path.WithQuotes()));
+                    menu.AddItem(Content.showInExplorer, false, () => Process.Start(instance.path));
 
                     menu.AddItem(Content.options, () => SetInstance(instance.id), enabled: !instance.isRunning);
                     menu.AddSeparator(string.Empty);
