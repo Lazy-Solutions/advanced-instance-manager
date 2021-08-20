@@ -17,5 +17,6 @@
   "author": {
     "name": "Lazy Solutions",
     "email": "support@lazy.solutions"
-  }
+  },
+  "type": "tool"
 }
