@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEditor;
-using UnityEditor.Compilation;
 using UnityEngine;
 
 namespace InstanceManager
@@ -97,8 +96,8 @@ namespace InstanceManager
                 CrossProcessEventUtility.On(nameof(OnPrimaryUnpause), () => OnPrimaryUnpause?.Invoke());
                 CrossProcessEventUtility.On(nameof(OnPrimaryAssetsChanged), () => OnPrimaryAssetsChanged?.Invoke());
 
-                OnPrimaryEnterPlayMode += () => { if (instance.enterPlayModeAutomatically) EditorApplication.EnterPlaymode(); };
-                OnPrimaryExitPlayMode += () => { if (instance.enterPlayModeAutomatically) EditorApplication.ExitPlaymode(); };
+                OnPrimaryEnterPlayMode += () => { if (instance.enterPlayModeAutomatically) EditorApplication.isPlaying = true; };
+                OnPrimaryExitPlayMode += () => { if (instance.enterPlayModeAutomatically) EditorApplication.isPlaying = false; };
                 OnPrimaryPause += () => { if (instance.enterPlayModeAutomatically) EditorApplication.isPaused = true; };
                 OnPrimaryUnpause += () => { if (instance.enterPlayModeAutomatically) EditorApplication.isPaused = false; };
                 OnPrimaryAssetsChanged += () => { if (instance.autoSync) SyncWithPrimaryInstance(); };
@@ -178,7 +177,9 @@ namespace InstanceManager
 
             AssetDatabase.Refresh(ImportAssetOptions.ForceUpdate);
             SceneUtility.ReloadScenes();
-            CompilationPipeline.RequestScriptCompilation();
+#if !UNITY_2018
+            UnityEditor.Compilation.CompilationPipeline.RequestScriptCompilation();
+#endif
 
         }
 

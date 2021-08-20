@@ -23,13 +23,13 @@ namespace InstanceManager.Utility
 
 #if UNITY_2020
 
-            Stopwatch watch = null;
+            System.Diagnostics.Stopwatch watch = null;
             int? progress = null;
 
             if (!hideProgress)
             {
                 progress = Progress.Start(displayName, description, options: Progress.Options.Indefinite);
-                watch = new Stopwatch();
+                watch = new System.Diagnostics.Stopwatch();
                 watch.Start();
             }
 #endif
@@ -55,7 +55,7 @@ namespace InstanceManager.Utility
                 if (watch.ElapsedMilliseconds < minDisplayTime)
                     await Task.Delay(TimeSpan.FromMilliseconds(minDisplayTime - watch?.ElapsedMilliseconds ?? 0));
                 if (progress.HasValue) Progress.Remove(progress.Value);
-        }
+            }
 #endif
 
         }
