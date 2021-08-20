@@ -3,7 +3,7 @@
   "version": "0.5.0",
   "displayName": "Advanced Instance Manager",
   "description": "This package provides easy editor instance management, making it easier to test multiplayer games in Unity",
-  "unity": "2018",
+  "unity": "2018.1",
   "documentationUrl": "https://github.com/Lazy-Solutions/advanced-instance-manager/wiki",
   "changelogUrl": "https://assetstore.unity.com/packages/tools/utilities/advanced-instance-manager-[TODO:UpdateSlugID]#releases",
   "licensesUrl": "https://github.com/Lazy-Solutions/advanced-instance-manager/blob/main/LICENSE",
