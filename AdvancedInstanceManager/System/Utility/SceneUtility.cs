@@ -3,6 +3,7 @@ using UnityEditor.SceneManagement;
 
 namespace InstanceManager
 {
+
     internal static class SceneUtility
     {
 
