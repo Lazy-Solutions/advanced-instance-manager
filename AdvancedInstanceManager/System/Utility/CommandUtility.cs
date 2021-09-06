@@ -15,10 +15,8 @@ namespace InstanceManager.Utility
         {
 #if UNITY_EDITOR_WIN
             return RunCommandWindows(windows);
-#elif UNITY_EDITOR_LINUX
+#elif UNITY_EDITOR_LINUX || UNITY_EDITOR_OSX
             return RunCommandLinux(linux);
-#elif UNITY_EDITOR_OSX
-            return RunCommandOSX(osx);
 #endif
         }
 
@@ -46,12 +44,12 @@ namespace InstanceManager.Utility
 
             });
 
-        /// <summary>Runs the command in the linux system terminal. Error is logged in console.</summary>
+        /// <summary>Runs the command in the linux system terminal. Error is logged in console. This method can be used OSX.</summary>
         public static Task<int> RunCommandLinux(string command) =>
             Task.Run(() =>
             {
 
-                using (var p = Process.Start(new ProcessStartInfo("/bin/bash", "-c \"" + command.Replace("\"", "\\\"") + "\"")
+                using (var p = Process.Start(new ProcessStartInfo("/bin/bash", "-c \"" + command.Replace("\"", "\"\"") + "\"")
                 {
                     UseShellExecute = false,
                     RedirectStandardError = true,
@@ -68,14 +66,6 @@ namespace InstanceManager.Utility
 
                 }
 
-            });
-
-        /// <summary>Runs the command in the osx system terminal. Error is logged in console.</summary>
-        public static Task<int> RunCommandOSX(string command, bool closeWindowWhenDone = true) =>
-            Task.Run(() =>
-            {
-                Debug.LogWarning("OSX not yet supported.");
-                return 0;
             });
 
     }

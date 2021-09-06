@@ -140,13 +140,13 @@ namespace InstanceManager.Editor
                 if (i == -1) i = 0;
                 instance.preferredLayout = layouts[EditorGUILayout.Popup(i, layouts, GUILayout.Width(popupWidth))];
 
+                EditorGUILayout.EndHorizontal();
+
                 if (InstanceManager.isSecondaryInstance && GUILayout.Button(Content.apply, GUILayout.ExpandWidth(false)))
                 {
                     WindowLayoutUtility.Find(instance.preferredLayout).Apply();
                     Open();
                 }
-
-                EditorGUILayout.EndHorizontal();
 
             }
 

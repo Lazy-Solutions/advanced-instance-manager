@@ -1,13 +1,32 @@
-﻿using System.Diagnostics;
-using UnityEditor;
+﻿using UnityEditor;
 using UnityEditor.Callbacks;
-using UnityEngine;
 
 namespace InstanceManager.Utility
 {
 
-    internal static class ScriptAssetOpenUtility
+    static class ScriptAssetOpenUtility
     {
+
+        [InitializeOnLoadMethod]
+        static void OnLoad()
+        {
+
+            if (InstanceManager.isSecondaryInstance)
+                return;
+
+            CrossProcessEventUtility.On("open", (param) =>
+            {
+
+                int.TryParse(param.Remove(param.IndexOf("|")), out var line);
+                var path = param.Substring(param.IndexOf("|") + 1);
+
+                var script = AssetDatabase.LoadAssetAtPath<MonoScript>(path);
+                if (script)
+                    AssetDatabase.OpenAsset(script, line);
+
+            });
+
+        }
 
         [OnOpenAsset(0)]
         public static bool OnOpen(int instanceID, int line)
@@ -16,13 +35,8 @@ namespace InstanceManager.Utility
             if (InstanceManager.isSecondaryInstance && InstanceManager.instance.openEditorInPrimaryEditor &&
                 EditorUtility.InstanceIDToObject(instanceID) is MonoScript script)
             {
-
-                Process.Start("devenv",
-                    "/edit " + Application.dataPath.Replace("/Assets", "") + "/" + AssetDatabase.GetAssetPath(script) + " " +
-                    "/command " + $"GoToLn {line}".WithQuotes());
-
+                CrossProcessEventUtility.SendToHost("open", line + "|" + AssetDatabase.GetAssetPath(script));
                 return true;
-
             }
 
             return false;

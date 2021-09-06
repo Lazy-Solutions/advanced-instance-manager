@@ -54,7 +54,7 @@ namespace InstanceManager.Utility
         /// <summary>Enumerates all secondary instances for this project.</summary>
         public static IEnumerable<UnityInstance> Enumerate() =>
             Directory.GetDirectories(Paths.aboveProject).
-            Select(f => Load(Path.Combine(f, instanceFileName))).
+            Select(f => ActionUtility.Try(() => Load(Path.Combine(f, instanceFileName)), hideError: true)).
             OfType<UnityInstance>().
             Where(instance => instance.primaryID == InstanceManager.id);
 
@@ -120,13 +120,18 @@ namespace InstanceManager.Utility
 
         }
 
+
         static UnityInstance Load(string path)
         {
+
+            var osdk = Paths.PrimaryInstancePath() + "/";
+            if (path.StartsWith(Paths.PrimaryInstancePath() + "/"))
+                return null;
 
             if (Path.GetFileName(path) != instanceFileName)
                 return null;
 
-            if (!File.Exists(path))
+            if (!File.Exists(path.ToWindowsPath()))
                 return null;
 
             var json = File.ReadAllText(path);

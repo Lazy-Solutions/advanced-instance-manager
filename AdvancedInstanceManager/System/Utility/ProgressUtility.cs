@@ -5,6 +5,28 @@ using UnityEditor;
 namespace InstanceManager.Utility
 {
 
+    static class ActionUtility
+    {
+
+        public static T Try<T>(this Func<T> func, bool hideError = false)
+        {
+
+            try
+            {
+                return func.Invoke();
+            }
+            catch (Exception ex)
+            {
+                if (!hideError)
+                    throw ex;
+            }
+
+            return default;
+
+        }
+
+    }
+
     public static class ProgressUtility
     {
 
@@ -15,7 +37,7 @@ namespace InstanceManager.Utility
         /// <param name="description">The description for the progress item.</param>
         /// <param name="minDisplayTime">The minimum display time of the progress bar, makes sure that the progress is displayed and readable, instead of just flickering.</param>
         /// <param name="canRun">Prevents the task from running and does not create a progress item if false.</param>
-        public static async Task RunTask(string displayName, Task task, Action<Task> onComplete = null, string description = null, int minDisplayTime = 250, bool canRun = true, bool hideProgress = false)
+        public static async Task RunTask(string displayName, Task task, Action<Task> onComplete = null, string description = null, int minDisplayTime = 250, bool canRun = true, bool hideProgress = false, bool hideError = false)
         {
 
             if (!canRun)
@@ -41,7 +63,8 @@ namespace InstanceManager.Utility
             }
             catch (Exception e)
             {
-                UnityEngine.Debug.LogError(e);
+                if (!hideError)
+                    UnityEngine.Debug.LogError(e);
             }
 
             EditorApplication.delayCall += () => onComplete?.Invoke(task);

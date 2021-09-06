@@ -13,18 +13,19 @@ namespace InstanceManager
     public static class InstanceManager
     {
 
-        //TODO: Something is wrong which causes local multiplayer to not assign correct ids to each instance
-        //TODO: Check out: https://github.com/VeriorPies/ParrelSync/tree/95a062cb14e669c7834094366611765d3a9658d6
-
         //TODO: Clean up code
         //TODO: Fix fonts
         //TODO: Add multi-platform support
+        //TODO: Verify ProgressUtility pragmas work in 2021
+        //TODO: How often is instances reloaded in instance list?
 
         /// <summary>The secondary instances that have been to this project.</summary>
         public static IEnumerable<UnityInstance> instances => InstanceUtility.Enumerate();
 
         /// <summary>The current instance. <see langword="null"/> if primary.</summary>
-        public static UnityInstance instance { get; } = InstanceUtility.LocalInstance();
+        public static UnityInstance instance { get; } =
+            InstanceUtility.LocalInstance();
+
 
         /// <summary>Occurs during startup if current instance is secondary.</summary>
         public static event Action onSecondInstanceStarted;
@@ -64,6 +65,8 @@ namespace InstanceManager
         static void SetupCrossProcessEvents(bool isPrimary)
         {
 
+            CrossProcessEventUtility.Initialize();
+
             if (isPrimary)
             {
 
@@ -87,8 +90,6 @@ namespace InstanceManager
             }
             else
             {
-
-                CrossProcessEventUtility.Initialize();
 
                 CrossProcessEventUtility.On(nameof(OnPrimaryEnterPlayMode), () => OnPrimaryEnterPlayMode?.Invoke());
                 CrossProcessEventUtility.On(nameof(OnPrimaryExitPlayMode), () => OnPrimaryExitPlayMode?.Invoke());
@@ -115,6 +116,7 @@ namespace InstanceManager
         {
 
 #if UNITY_EDITOR_WIN
+            //Prevents taskbar from sometimes flashing window
             WindowUtility.Initialize();
 #endif
 

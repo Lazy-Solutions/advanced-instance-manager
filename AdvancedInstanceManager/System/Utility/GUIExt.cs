@@ -119,7 +119,7 @@ namespace InstanceManager.Editor
             if (string.IsNullOrEmpty(text) && watermark != null)
             {
                 var r = GUILayoutUtility.GetLastRect();
-                EditorGUI.LabelField(new Rect(r.x + 3, r.y, r.width, r.height), watermark, grayedOut);
+                EditorGUI.LabelField(new Rect(r.x + 3, r.y + 1.5f, r.width, r.height), watermark, grayedOut);
             }
 
             return text;

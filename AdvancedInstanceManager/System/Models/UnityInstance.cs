@@ -72,13 +72,16 @@ namespace InstanceManager.Models
         [SerializeField] private bool m_enterPlayModeAutomatically = true;
         [SerializeField] private string[] m_scenes;
         [SerializeField] private string m_displayName;
-        [SerializeField] private bool m_openEditorInPrimaryEditor = true;
+        [SerializeField] private bool m_openEditorInPrimaryEditor = false;
 
-        /// <summary>The paths to this instance file.</summary>
+        /// <summary>The path to this instance file.</summary>
         internal string filePath => Paths.InstancePath(id) + "/" + InstanceUtility.instanceFileName;
 
-        /// <summary>The paths to this instance file.</summary>
+        /// <summary>The path to the lock file.</summary>
         internal string lockPath => Paths.InstancePath(id) + "/" + InstanceUtility.instanceFileName + "-lock";
+
+        /// <summary>The path to the event file.</summary>
+        internal string eventsPath => Paths.InstancePath(id) + "/" + InstanceUtility.instanceFileName + "-events";
 
         /// <summary>Gets if this instance needs repairing.</summary>
         public bool needsRepair { get; }
