@@ -9,7 +9,7 @@ jobs:
     - uses: actions/checkout@v2    
     - run: |
         echo "AdvancedInstanceManager.meta" > metaList
-        find AdvancedInstanceManager/System -name \*.meta >> metaList
+        find AdvancedInstanceManager/ -name \*.meta >> metaList
 
     - uses: pCYSl5EDgo/create-unitypackage@master
       with:
