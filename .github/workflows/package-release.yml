@@ -3,8 +3,9 @@ name: Package asset (release)
 on: 
   workflow_dispatch:
     inputs:
-      version: 'Version'
-      required: true
+      version: 
+        description: 'Version'
+        required: true
 
 jobs:
   echo:
