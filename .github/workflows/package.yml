@@ -10,7 +10,7 @@ jobs:
     
     - run: |
         mkdir Assets
-        mv AdvancedInstanceManager Assets/AdvancedInstanceManager
+        mv AdvancedInstanceManager /Assets
     
     - run: |
         echo "Assets/AdvancedInstanceManager.meta" > metaList
