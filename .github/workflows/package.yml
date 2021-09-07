@@ -30,7 +30,7 @@ jobs:
     - uses: ncipollo/release-action@v1
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
-        omitBody: true
+        body: dev release, ${{ steps.package-version.outputs.current-version}}
         prerelease: true
         draft: true
         commit: main
