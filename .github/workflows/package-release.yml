@@ -12,12 +12,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    
-    - name: 'change version'
-      uses: reedyuk/npm-version@1.1.1
+  
+    - name: Find and Replace
+      uses: jacobtomlinson/gha-find-replace@master
       with:
-        version: ${{ github.event.inputs.version }}
-        git-tag-version: 'true'
+        include: package.json
+        find: 'version"\: "${{ steps.package-version.outputs.current-version}}'
+        replace: 'version"\: "${{ github.event.inputs.version }}'
         
     - name: get-npm-version
       id: package-version
