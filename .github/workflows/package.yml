@@ -24,7 +24,7 @@ jobs:
         
     - uses: pCYSl5EDgo/create-unitypackage@master
       with:
-        package-path: 'advanced-instance-manager.unitypackage'
+        package-path: 'advanced-instance-manager.${{ steps.package-version.outputs.current-version}}.unitypackage'
         include-files: metaList
         
     - uses: ncipollo/release-action@v1
