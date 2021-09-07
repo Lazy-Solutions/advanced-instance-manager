@@ -13,13 +13,17 @@ jobs:
     steps:
     - uses: actions/checkout@v2
   
-    - name: Find and Replace
+    - name: get-npm-version
+      id: package-version-pre
+      uses: martinbeentjes/npm-get-version-action@master
+    
+    - name: 'Change version'
       uses: jacobtomlinson/gha-find-replace@master
       with:
         include: package.json
-        find: 'version"\: "${{ steps.package-version.outputs.current-version}}'
+        find: 'version"\: "${{ steps.package-version-pre.outputs.current-version}}'
         replace: 'version"\: "${{ github.event.inputs.version }}'
-        
+    
     - name: get-npm-version
       id: package-version
       uses: martinbeentjes/npm-get-version-action@master
