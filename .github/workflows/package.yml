@@ -7,10 +7,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2    
+    
     - run: |
-        echo "AdvancedInstanceManager.meta" > metaList
-        find AdvancedInstanceManager/ -name \*.meta >> metaList
-
+        mkdir Assets
+        mv AdvancedInstanceManager Assets/AdvancedInstanceManager
+    
+    - run: |
+        echo "Assets/AdvancedInstanceManager.meta" > metaList
+        find Assets/AdvancedInstanceManager/ -name \*.meta >> metaList
+        
     - uses: pCYSl5EDgo/create-unitypackage@master
       with:
         package-path: 'advanced-instance-manager.unitypackage'
