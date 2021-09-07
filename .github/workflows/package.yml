@@ -20,8 +20,7 @@ jobs:
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
         omitBody: true
-        draft: true
         prerelease: true
         commit: main
-        tag: Release
+        tag: dev
         artifacts: advanced-instance-manager.unitypackage
