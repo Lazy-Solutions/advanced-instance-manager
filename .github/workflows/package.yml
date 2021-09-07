@@ -9,8 +9,8 @@ jobs:
     - uses: actions/checkout@v2    
     
     - run: |
-        mkdir /Assets
-        mv /AdvancedInstanceManager /Assets/AdvancedInstanceManager
+        mkdir Assets
+        mv AdvancedInstanceManager Assets/AdvancedInstanceManager
     
     - run: |
         echo "Assets/AdvancedInstanceManager.meta" > metaList
