@@ -1,4 +1,4 @@
-name: Package asset
+name: Package asset (dev)
 
 on: 
   push:
