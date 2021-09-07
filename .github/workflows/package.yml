@@ -14,9 +14,14 @@ jobs:
 
     - uses: pCYSl5EDgo/create-unitypackage@master
       with:
-        package-path: 'a/output.unitypackage'
+        package-path: 'a/advanced-instance-manager.unitypackage'
         include-files: metaList
-    - uses: actions/upload-artifact@master
+        
+    - uses: ncipollo/release-action@v1
       with:
-        path: a
-        name: package
+        token: ${{ secrets.GITHUB_TOKEN }}
+        omitBody: true
+        draft: true
+        prerelease: true
+        commit: main
+        artifacts: a/advanced-instance-manager.unitypackage
