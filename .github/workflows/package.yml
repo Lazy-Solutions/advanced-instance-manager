@@ -10,11 +10,10 @@ jobs:
     - run: |
         echo "AdvancedInstanceManager.meta" > metaList
         find AdvancedInstanceManager/ -name \*.meta >> metaList
-    - run: mkdir a
 
     - uses: pCYSl5EDgo/create-unitypackage@master
       with:
-        package-path: 'a/advanced-instance-manager.unitypackage'
+        package-path: 'advanced-instance-manager.unitypackage'
         include-files: metaList
         
     - uses: ncipollo/release-action@v1
@@ -25,4 +24,4 @@ jobs:
         prerelease: true
         commit: main
         tag: ${GITHUB_SHA::6}
-        artifacts: a/advanced-instance-manager.unitypackage
+        artifacts: advanced-instance-manager.unitypackage
