@@ -25,7 +25,7 @@ jobs:
         mv AdvancedInstanceManager.meta Assets/AdvancedInstanceManager.meta
        
     - name: Find .meta files
-    - run: |
+      run: |
         echo "Assets/AdvancedInstanceManager.meta" > metaList
         find Assets/AdvancedInstanceManager/ -name \*.meta >> metaList
         
