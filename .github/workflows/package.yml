@@ -8,6 +8,10 @@ jobs:
     steps:
     - uses: actions/checkout@v2    
     
+    - name: get-npm-version
+      id: package-version
+      uses: martinbeentjes/npm-get-version-action@master
+
     - run: |
         mkdir Assets
         mv AdvancedInstanceManager Assets/AdvancedInstanceManager
@@ -30,4 +34,4 @@ jobs:
         draft: true
         commit: main
         tag: dev
-        artifacts: advanced-instance-manager.unitypackage
+        artifacts: advanced-instance-manager.${{ steps.package-version.outputs.current-version}}.unitypackage
