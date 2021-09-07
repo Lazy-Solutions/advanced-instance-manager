@@ -1,0 +1,54 @@
+name: Package asset (release)
+
+on: 
+  workflow_dispatch:
+    inputs:
+      version: 'Version'
+      required: true
+
+jobs:
+  echo:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    
+    - name: 'change version'
+      uses: reedyuk/npm-version@1.1.1
+      with:
+        version: ${{ github.event.inputs.version }}
+        package: 'subproject-directory/'
+        git-tag-version: 'true'
+        
+    - name: get-npm-version
+      id: package-version
+      uses: martinbeentjes/npm-get-version-action@master
+    
+    - run: 'echo version: ${{ steps.package-version.outputs.current-version}}'
+
+    - name: Move into subfolder Assets
+      run: |
+        mkdir Assets
+        mv AdvancedInstanceManager Assets/AdvancedInstanceManager
+        mv AdvancedInstanceManager.meta Assets/AdvancedInstanceManager.meta
+       
+    - name: Find .meta files
+      run: |
+        echo "Assets/AdvancedInstanceManager.meta" > metaList
+        find Assets/AdvancedInstanceManager/ -name \*.meta >> metaList
+        
+    - name: Create unity package
+      uses: pCYSl5EDgo/create-unitypackage@master
+      with:
+        package-path: 'advanced-instance-manager-${{ steps.package-version.outputs.current-version}}.unitypackage'
+        include-files: metaList
+        
+    - name: Release
+      uses: ncipollo/release-action@v1
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        body: Asset store release
+        prerelease: false
+        draft: true
+        commit: main
+        tag: release
+        artifacts: advanced-instance-manager-${{ steps.package-version.outputs.current-version}}.unitypackage
