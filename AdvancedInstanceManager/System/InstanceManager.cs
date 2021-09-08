@@ -14,8 +14,7 @@ namespace InstanceManager
     {
 
         //TODO: Fix fonts (linux also has this issue)
-        //TODO: Add support for linux when removing entry from unity hub
-        //TODO: Does enumeration work properly on linux (restarting vm made instanced not be found, even if folders were still there?)
+        //TODO: Restarting linux vm (or perhaps just restarting unity), causes instances to not be recognized (does primary id change?)
         //TODO: Write .instance file before symlinking and make sure it shows up in instance manager window while setting instance up
 
         /// <summary>The secondary instances that have been to this project.</summary>

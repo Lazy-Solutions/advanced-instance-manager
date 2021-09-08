@@ -1,10 +1,10 @@
-using InstanceManager.Editor;
-using InstanceManager.Utility;
 using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using InstanceManager.Editor;
+using InstanceManager.Utility;
 using UnityEditor;
 using UnityEngine;
 
@@ -306,7 +306,7 @@ namespace InstanceManager.Models
         {
 
             var root = "sceneSetups:";
-            bool isFirstScene = true;
+            var isFirstScene = true;
 
             string GetSceneString(string scenePath)
             {

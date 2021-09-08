@@ -25,18 +25,18 @@ namespace InstanceManager.Utility
             if (!canRun)
                 return;
 
-//#if !UNITY_2018 && !UNITY_2019
+#if !UNITY_2018 && !UNITY_2019
 
-//            System.Diagnostics.Stopwatch watch = null;
-//            int? progress = null;
+            System.Diagnostics.Stopwatch watch = null;
+            int? progress = null;
 
-//            if (!hideProgress)
-//            {
-//                progress = Progress.Start(displayName, description, options: Progress.Options.Indefinite);
-//                watch = new System.Diagnostics.Stopwatch();
-//                watch.Start();
-//            }
-//#endif
+            if (!hideProgress)
+            {
+                progress = Progress.Start(displayName, description, options: Progress.Options.Indefinite);
+                watch = new System.Diagnostics.Stopwatch();
+                watch.Start();
+            }
+#endif
 
             try
             {
@@ -52,16 +52,16 @@ namespace InstanceManager.Utility
             EditorApplication.delayCall += () => onComplete?.Invoke(task);
             EditorApplication.QueuePlayerLoopUpdate();
 
-//#if !UNITY_2018 && !UNITY_2019
-//            if (!hideProgress)
-//            {
-//                watch?.Stop();
-//                //Make sure that progress is actually readable, rather than just a flicker
-//                if (watch.ElapsedMilliseconds < minDisplayTime)
-//                    await Task.Delay(TimeSpan.FromMilliseconds(minDisplayTime - watch?.ElapsedMilliseconds ?? 0));
-//                if (progress.HasValue) Progress.Remove(progress.Value);
-//            }
-//#endif
+#if !UNITY_2018 && !UNITY_2019
+            if (!hideProgress)
+            {
+                watch?.Stop();
+                //Make sure that progress is actually readable, rather than just a flicker
+                if (watch.ElapsedMilliseconds < minDisplayTime)
+                    await Task.Delay(TimeSpan.FromMilliseconds(minDisplayTime - watch?.ElapsedMilliseconds ?? 0));
+                if (progress.HasValue) Progress.Remove(progress.Value);
+            }
+#endif
 
         }
 

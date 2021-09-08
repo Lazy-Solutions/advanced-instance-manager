@@ -135,6 +135,31 @@ namespace InstanceManager.Utility
                            if (value.StartsWith(instancePath.ToCrossPlatformPath()))
                                key.DeleteValue(name);
                        }
+
+#elif UNITY_EDITOR_LINUX
+
+                   var file = File.ReadAllText(@"/home/pc/.local/share/unity3d/prefs");
+                   var lines = file.Split(new[] { Environment.NewLine.ToString() }, StringSplitOptions.None);
+                   for (var i = 0; i < lines.Length; i++)
+                   {
+                       var line = lines[i];
+                       if (line.Contains(@"<pref name=""RecentlyUsedProjectPaths"))
+                       {
+
+                           var base64 = line.Substring(line.IndexOf('>') + 1);
+                           base64 = base64.Remove(base64.IndexOf("<"));
+
+                           var value = Encoding.ASCII.GetString(Convert.FromBase64String(base64));
+                           if (value.StartsWith(instancePath.ToCrossPlatformPath()))
+                               line = line.Replace(base64, null);
+
+                           lines[i] = line;
+
+                       }
+                   }
+
+                   File.WriteAllText(@"/home/pc/.local/share/unity3d/prefs", string.Join(Environment.NewLine, lines));
+
 #endif
                }));
 
