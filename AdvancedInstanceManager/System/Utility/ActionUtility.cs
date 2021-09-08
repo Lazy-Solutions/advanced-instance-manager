@@ -31,7 +31,7 @@ namespace InstanceManager.Utility
         public static T Try<T>(this Func<T> func, bool hideError = false)
         {
             T obj = default;
-            Try(() => obj = func.Invoke(), hideError);
+            Try(action: () => obj = func.Invoke(), hideError);
             return obj;
         }
 
