@@ -13,10 +13,10 @@ namespace InstanceManager
     public static class InstanceManager
     {
 
-        //TODO: Fix fonts
-        //TODO: Add multi-platform support
-        //TODO: Verify ProgressUtility pragmas work in 2021
-        //TODO: How often is instances reloaded in instance list?
+        //TODO: Fix fonts (linux also has this issue)
+        //TODO: Add support for linux when removing entry from unity hub
+        //TODO: Does enumeration work properly on linux (restarting vm made instanced not be found, even if folders were still there?)
+        //TODO: Write .instance file before symlinking and make sure it shows up in instance manager window while setting instance up
 
         /// <summary>The secondary instances that have been to this project.</summary>
         public static IEnumerable<UnityInstance> instances => InstanceUtility.Enumerate();
