@@ -1,4 +1,5 @@
-﻿using InstanceManager.Models;
+﻿using System.Net;
+using InstanceManager.Models;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -120,19 +121,21 @@ namespace InstanceManager.Utility
 
         }
 
-
         static UnityInstance Load(string path)
         {
 
-            var osdk = Paths.PrimaryInstancePath() + "/";
             if (path.StartsWith(Paths.PrimaryInstancePath() + "/"))
                 return null;
 
             if (Path.GetFileName(path) != instanceFileName)
                 return null;
-
+#if UNITY_EDITOR_WIN
             if (!File.Exists(path.ToWindowsPath()))
                 return null;
+#else
+            if (!File.Exists(path))
+                return null;
+#endif
 
             var json = File.ReadAllText(path);
             return JsonUtility.FromJson<UnityInstance>(json);
@@ -142,7 +145,7 @@ namespace InstanceManager.Utility
         static internal void Save(UnityInstance instance)
         {
             var json = JsonUtility.ToJson(instance);
-            File.WriteAllText(instance.filePath, json);
+            File.WriteAllLines(instance.filePath.ToCrossPlatformPath(), new[] { json });
         }
 
         internal static void Remove(UnityInstance instance, Action onComplete = null)

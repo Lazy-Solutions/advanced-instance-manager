@@ -15,8 +15,10 @@ namespace InstanceManager.Utility
         {
 #if UNITY_EDITOR_WIN
             return RunCommandWindows(windows);
-#elif UNITY_EDITOR_LINUX || UNITY_EDITOR_OSX
-            return RunCommandLinux(linux);
+#elif UNITY_EDITOR_LINUX
+            return RunCommandLinuxOSX(linux);
+#elif UNITY_EDITOR_OSX
+            return RunCommandLinuxOSX(osx);
 #endif
         }
 
@@ -44,11 +46,11 @@ namespace InstanceManager.Utility
 
             });
 
-        /// <summary>Runs the command in the linux system terminal. Error is logged in console. This method can be used OSX.</summary>
-        public static Task<int> RunCommandLinux(string command) =>
+        /// <summary>Runs the command in the linux system terminal. Error is logged in console.</summary>
+        public static Task<int> RunCommandLinuxOSX(string command) =>
             Task.Run(() =>
             {
-
+                
                 using (var p = Process.Start(new ProcessStartInfo("/bin/bash", "-c \"" + command.Replace("\"", "\"\"") + "\"")
                 {
                     UseShellExecute = false,
@@ -61,7 +63,7 @@ namespace InstanceManager.Utility
                     p.WaitForExit();
                     if (!p.StandardError.EndOfStream)
                         Debug.LogError($"Command '{command}' failed:" + Environment.NewLine + p.StandardError.ReadToEnd());
-
+                    
                     return p.ExitCode;
 
                 }

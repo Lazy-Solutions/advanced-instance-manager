@@ -14,19 +14,19 @@ namespace InstanceManager.Utility
 
         #region Watcher
 
-        /// <summary>Initializes the event listener, for a secondary instance.</summary>
+        /// <summary>Initializes the event listener.</summary>
         internal static void Initialize()
         {
 
-            var instancePath =
+            var filePath =
                 InstanceManager.isSecondaryInstance
-                ? InstanceManager.instance.lockPath
+                ? InstanceManager.instance.eventsPath
                 : Paths.primaryEventsFile;
 
-            if (InstanceManager.isPrimaryInstance && !File.Exists(instancePath))
-                File.Create(instancePath);
+            if (!File.Exists(filePath))
+                File.Create(filePath);
 
-            var file = new FileInfo(instancePath);
+            var file = new FileInfo(filePath);
 
             DateTime lastUpdate = DateTime.Now;
             EditorApplication.update -= Update;
@@ -52,7 +52,7 @@ namespace InstanceManager.Utility
 
             var path =
                 InstanceManager.isSecondaryInstance
-                ? InstanceManager.instance.lockPath
+                ? InstanceManager.instance.eventsPath
                 : Paths.primaryEventsFile;
 
             if (!File.Exists(path) || new FileInfo(path).Length == 0)

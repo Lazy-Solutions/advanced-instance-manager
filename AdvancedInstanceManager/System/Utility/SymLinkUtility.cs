@@ -21,7 +21,8 @@ namespace InstanceManager.Utility
             "EditorInstance.json",
             "ArtifactDB",
             "SourceAssetDB",
-            "\\Bee"
+            "\\Bee",
+            ".instance-events"
         };
 
         /// <summary>Creates a new secondary instance.</summary>
@@ -50,7 +51,8 @@ namespace InstanceManager.Utility
 
                        //Link files
                        foreach (var file in Directory.GetFiles(projectPath, "*", SearchOption.TopDirectoryOnly))
-                           yield return SymLinkRelative(Path.GetFileName(file));
+                           if (!libraryBlacklist.Any(str => file.EndsWith(str)))
+                                yield return SymLinkRelative(Path.GetFileName(file));
 
                        //Link all items in 'Library' folder, we need to do these individually since
                        //we need to avoid lock files and files causing conflicts
