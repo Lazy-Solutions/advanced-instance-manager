@@ -15,9 +15,9 @@ namespace InstanceManager.Utility
 #if UNITY_EDITOR_WIN
             RunCommandWindows(windows);
 #elif UNITY_EDITOR_LINUX
-            return RunCommandLinuxOSX(linux);
+            RunCommandLinuxOSX(linux);
 #elif UNITY_EDITOR_OSX
-            return RunCommandLinuxOSX(osx);
+            RunCommandLinuxOSX(osx);
 #endif
 
         /// <summary>Runs the command in the windows system terminal. Error is logged in console.</summary>
