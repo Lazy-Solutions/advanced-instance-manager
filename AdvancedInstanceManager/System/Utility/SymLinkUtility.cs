@@ -9,7 +9,7 @@ namespace InstanceManager.Utility
 {
 
     /// <summary>Provides functions for interacting with SymLinker.exe.</summary>
-    internal static class SymLinkUtility
+    static class SymLinkUtility
     {
 
         /// <summary>These should not be linked inside '/Library/'.</summary>
@@ -52,7 +52,7 @@ namespace InstanceManager.Utility
                        //Link files
                        foreach (var file in Directory.GetFiles(projectPath, "*", SearchOption.TopDirectoryOnly))
                            if (!libraryBlacklist.Any(str => file.EndsWith(str)))
-                                yield return SymLinkRelative(Path.GetFileName(file));
+                               yield return SymLinkRelative(Path.GetFileName(file));
 
                        //Link all items in 'Library' folder, we need to do these individually since
                        //we need to avoid lock files and files causing conflicts

@@ -4,7 +4,7 @@ using UnityEditor.SceneManagement;
 namespace InstanceManager
 {
 
-    internal static class SceneUtility
+    static class SceneUtility
     {
 
         public static void OpenScenes(params string[] paths)

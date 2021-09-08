@@ -1,8 +1,8 @@
-﻿using InstanceManager.Models;
-using InstanceManager.Utility;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using InstanceManager.Models;
+using InstanceManager.Utility;
 using UnityEditor;
 using UnityEngine;
 
@@ -13,7 +13,6 @@ namespace InstanceManager
     public static class InstanceManager
     {
 
-        //TODO: Clean up code
         //TODO: Fix fonts
         //TODO: Add multi-platform support
         //TODO: Verify ProgressUtility pragmas work in 2021
@@ -25,7 +24,6 @@ namespace InstanceManager
         /// <summary>The current instance. <see langword="null"/> if primary.</summary>
         public static UnityInstance instance { get; } =
             InstanceUtility.LocalInstance();
-
 
         /// <summary>Occurs during startup if current instance is secondary.</summary>
         public static event Action onSecondInstanceStarted;
@@ -45,16 +43,25 @@ namespace InstanceManager
 
         #region Events
 
+        /// <summary>Occurs when primary instance is paused.</summary>
         public static event Action OnPrimaryPause;
+
+        /// <summary>Occurs when primary instance is unpaused.</summary>
         public static event Action OnPrimaryUnpause;
+
+        /// <summary>Occurs when primary instance enters play mode.</summary>
         public static event Action OnPrimaryEnterPlayMode;
+
+        /// <summary>Occurs when primary instance exiting play mode.</summary>
         public static event Action OnPrimaryExitPlayMode;
+
+        /// <summary>Occurs when primary instance has had its assets changed.</summary>
         public static event Action OnPrimaryAssetsChanged;
 
         class AssetsChangedCallback : AssetPostprocessor
         {
 
-            static void OnPostprocessAllAssets(string[] _, string[] _1, string[] _2, string[] _3)
+            static void OnPostprocessAllAssets(string[] _, string[] __, string[] ___, string[] ____)
             {
                 if (isPrimaryInstance)
                     CrossProcessEventUtility.Send(nameof(OnPrimaryAssetsChanged));
@@ -156,9 +163,8 @@ namespace InstanceManager
             }
 
             EditorApplication.quitting += () =>
-            {
                 InstanceUtility.SetLocked(false);
-            };
+
 #if UNITY_EDITOR_WIN
             EditorApplication.playModeStateChanged += (state) =>
             {

@@ -1,6 +1,6 @@
-﻿using InstanceManager.Models;
+﻿using System.Linq;
+using InstanceManager.Models;
 using InstanceManager.Utility;
-using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
@@ -182,7 +182,6 @@ namespace InstanceManager.Editor
             window = this;
 
             ReloadInstances();
-
 
             if (InstanceManager.isSecondaryInstance)
                 SetInstance(InstanceManager.id);

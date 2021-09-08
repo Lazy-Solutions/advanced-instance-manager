@@ -81,7 +81,7 @@ namespace InstanceManager.Models
         internal string lockPath => Paths.InstancePath(id) + "/" + InstanceUtility.instanceFileName + "-lock";
 
         /// <summary>The path to the event file.</summary>
-        internal string eventsPath => Paths.InstancePath(id) + "/" + InstanceUtility.instanceFileName + "-events";
+        internal string eventsFile => Paths.InstancePath(id) + "/" + InstanceUtility.instanceFileName + "-events";
 
         /// <summary>Gets if this instance needs repairing.</summary>
         public bool needsRepair { get; }

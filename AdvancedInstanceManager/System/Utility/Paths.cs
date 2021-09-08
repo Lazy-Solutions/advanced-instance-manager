@@ -5,7 +5,7 @@ namespace InstanceManager.Utility
 {
 
     /// <summary>Common paths in instance manager.</summary>
-    internal static class Paths
+    static class Paths
     {
 
         /// <summary>The path to the project, outside of Assets folder.</summary>

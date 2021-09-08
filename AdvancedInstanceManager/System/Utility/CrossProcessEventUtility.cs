@@ -1,8 +1,8 @@
-﻿using InstanceManager.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using InstanceManager.Models;
 using UnityEditor;
 
 namespace InstanceManager.Utility
@@ -12,23 +12,23 @@ namespace InstanceManager.Utility
     public static class CrossProcessEventUtility
     {
 
+        static string path =>
+            InstanceManager.isSecondaryInstance
+                ? InstanceManager.instance.eventsFile
+                : Paths.primaryEventsFile;
+
         #region Watcher
 
         /// <summary>Initializes the event listener.</summary>
         internal static void Initialize()
         {
 
-            var filePath =
-                InstanceManager.isSecondaryInstance
-                ? InstanceManager.instance.eventsPath
-                : Paths.primaryEventsFile;
+            if (!File.Exists(path))
+                File.Create(path);
 
-            if (!File.Exists(filePath))
-                File.Create(filePath);
+            var file = new FileInfo(path);
 
-            var file = new FileInfo(filePath);
-
-            DateTime lastUpdate = DateTime.Now;
+            var lastUpdate = DateTime.Now;
             EditorApplication.update -= Update;
             EditorApplication.update += Update;
 
@@ -49,11 +49,6 @@ namespace InstanceManager.Utility
 
         static void OnEvent()
         {
-
-            var path =
-                InstanceManager.isSecondaryInstance
-                ? InstanceManager.instance.eventsPath
-                : Paths.primaryEventsFile;
 
             if (!File.Exists(path) || new FileInfo(path).Length == 0)
                 return;
@@ -87,7 +82,7 @@ namespace InstanceManager.Utility
         public static void Send(UnityInstance instance, string name, string param = null)
         {
             if (InstanceManager.isPrimaryInstance)
-                Send(instance.eventsPath, name, param);
+                Send(instance.eventsFile, name, param);
         }
 
         /// <summary>Sends an event to the primary instance.</summary>
