@@ -133,7 +133,7 @@ namespace InstanceManager.Utility
             if (Path.GetFileName(path) != instanceFileName)
                 return null;
 
-            if (/*!File.Exists(path.ToWindowsPath()) || */!File.Exists(path))
+            if (!File.Exists(path))
                 return null;
 
             var json = File.ReadAllText(path);
