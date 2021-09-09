@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 using InstanceManager.Models;
 using InstanceManager.Utility;
@@ -15,7 +16,7 @@ namespace InstanceManager
 
         //TODO: Fix fonts (linux also has this issue)
         //TODO: Restarting linux vm (or perhaps just restarting unity), causes instances to not be recognized (does primary id change?)
-        //TODO: Write .instance file before symlinking and make sure it shows up in instance manager window while setting instance up
+        //TODO: Instance manager window opens on its own sometimes (fix applied, so is hopefully working)
 
         /// <summary>The secondary instances that have been to this project.</summary>
         public static IEnumerable<UnityInstance> instances => InstanceUtility.Enumerate();
@@ -138,9 +139,9 @@ namespace InstanceManager
         static void InitializePrimaryInstance()
         {
 
-            m_ID = PlayerPrefs.GetString("InstanceManager.PrimaryID", null);
+            m_ID = File.Exists(InstanceUtility.instanceFileName) ? File.ReadAllText(InstanceUtility.instanceFileName) : null;
             if (string.IsNullOrWhiteSpace(m_ID))
-                PlayerPrefs.SetString("InstanceManager.PrimaryID", m_ID = IDUtility.Generate());
+                File.WriteAllText(InstanceUtility.instanceFileName, m_ID = IDUtility.Generate());
 
             EditorApplication.wantsToQuit += () =>
             {

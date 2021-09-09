@@ -90,7 +90,7 @@ namespace InstanceManager.Editor
                     isEnabled: !instance.isSettingUp,
                     instance);
 
-            List<float> statusLabelPos = new List<float>();
+            readonly List<float> statusLabelPos = new List<float>();
             void DrawInstanceRow(string name, GUIContent status, bool? openButtonValue = null, bool isEnabled = true, UnityInstance instance = null, bool isHeader = false)
             {
 
@@ -134,7 +134,7 @@ namespace InstanceManager.Editor
                 else if (instance.needsRepair)
                 {
                     if (GUILayout.Button(Content.repair, GUILayout.ExpandWidth(false)))
-                        InstanceUtility.Repair(instance, instance.path, onComplete: () => { window.ReloadInstances(); window.Repaint(); });
+                        InstanceUtility.Repair(instance, instance.path);
                 }
                 else if (GUILayout.Button(instance.isRunning ? Content.close : Content.open, GUILayout.ExpandWidth(false)))
                     instance.ToggleOpen();
@@ -180,11 +180,11 @@ namespace InstanceManager.Editor
 
                     menu.AddItem(Content.options, () => SetInstance(instance.id), enabled: !instance.isRunning);
                     menu.AddSeparator(string.Empty);
-                    menu.AddItem(Content.delete, () => instance.Remove(window.Repaint), enabled: !instance.isRunning);
+                    menu.AddItem(Content.delete, instance.Remove, enabled: !instance.isRunning);
 
                     menu.ShowAsContext();
 
-                    window.Repaint();
+                    Repaint();
 
                 }
 
@@ -211,15 +211,8 @@ namespace InstanceManager.Editor
 
                 if (GUILayout.Button(Content.createNewInstance, Style.createButton))
                 {
-
-                    InstanceUtility.Create(onComplete: () =>
-                    {
-                        EditorApplication.delayCall += window.Repaint;
-                        EditorApplication.QueuePlayerLoopUpdate();
-                    });
-
+                    InstanceUtility.Create();
                     GUIUtility.ExitGUI();
-
                 }
 
                 EditorGUILayout.EndHorizontal();

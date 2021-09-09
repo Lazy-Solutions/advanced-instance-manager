@@ -1,10 +1,10 @@
-﻿using System.Net;
-using InstanceManager.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using InstanceManager.Models;
+using UnityEditor;
 using UnityEngine;
 
 namespace InstanceManager.Utility
@@ -13,6 +13,9 @@ namespace InstanceManager.Utility
     /// <summary>Provides utility functions for working with secondary instances.</summary>
     public static class InstanceUtility
     {
+
+        /// <summary>Occurs when an instance is changed.</summary>
+        public static event Action onInstancesChanged;
 
         /// <summary>The name of the instance settings file.</summary>
         public const string instanceFileName = ".instance";
@@ -60,7 +63,7 @@ namespace InstanceManager.Utility
             Where(instance => instance.primaryID == InstanceManager.id);
 
         /// <summary>Create a new secondary instance. Returns null if current instance is secondary.</summary>
-        public static UnityInstance Create(Action onComplete = null)
+        public static UnityInstance Create()
         {
 
             if (InstanceManager.isSecondaryInstance)
@@ -72,11 +75,11 @@ namespace InstanceManager.Utility
             settingUp.Add(instance.id);
 
             SymLinkUtility.Create(Paths.project, path,
+                 afterCreateFolder: instance.Save,
                  onComplete: () =>
                  {
                      settingUp.Remove(instance.id);
-                     instance.Save();
-                     onComplete?.Invoke();
+                     onInstancesChanged?.Invoke();
                  });
 
             return instance;
@@ -84,10 +87,9 @@ namespace InstanceManager.Utility
         }
 
         /// <summary>Repairs the instance. No effect if current instance is secondary.</summary>
-        public static Task Repair(UnityInstance instance, string path, Action onComplete = null) =>
+        public static Task Repair(UnityInstance instance, string path) =>
             ProgressUtility.RunTask(
                displayName: "Repairing instance",
-               onComplete: t => onComplete?.Invoke(),
                canRun: InstanceManager.isPrimaryInstance,
                task: new Task(async () =>
                {
@@ -99,6 +101,7 @@ namespace InstanceManager.Utility
                    await SymLinkUtility.Create(Paths.project, path, hideProgress: true);
 
                    settingUp.Remove(instance.id);
+                   onInstancesChanged?.Invoke();
 
                }));
 
@@ -129,34 +132,37 @@ namespace InstanceManager.Utility
 
             if (Path.GetFileName(path) != instanceFileName)
                 return null;
-#if UNITY_EDITOR_WIN
-            if (!File.Exists(path.ToWindowsPath()))
+
+            if (/*!File.Exists(path.ToWindowsPath()) || */!File.Exists(path))
                 return null;
-#else
-            if (!File.Exists(path))
-                return null;
-#endif
 
             var json = File.ReadAllText(path);
             return JsonUtility.FromJson<UnityInstance>(json);
 
         }
 
-        static internal void Save(UnityInstance instance)
+        internal static void Save(UnityInstance instance)
         {
             var json = JsonUtility.ToJson(instance);
             File.WriteAllLines(instance.filePath.ToCrossPlatformPath(), new[] { json });
+            RaiseOnInstancesChanged();
         }
 
-        internal static void Remove(UnityInstance instance, Action onComplete = null)
+        internal static void Remove(UnityInstance instance)
         {
 
             if (instance.isRunning)
                 throw new Exception("Cannot remove instance while running!");
 
             settingUp.Add(instance.id);
-            SymLinkUtility.Delete(instance.path, onComplete);
+            SymLinkUtility.Delete(instance.path, RaiseOnInstancesChanged);
 
+        }
+
+        static void RaiseOnInstancesChanged()
+        {
+            EditorApplication.delayCall += () => onInstancesChanged?.Invoke();
+            EditorApplication.QueuePlayerLoopUpdate();
         }
 
         static readonly List<string> settingUp = new List<string>();

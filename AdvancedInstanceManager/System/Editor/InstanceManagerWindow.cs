@@ -167,11 +167,23 @@ namespace InstanceManager.Editor
 
         }
 
-        internal static InstanceManagerWindow window;
+        static InstanceManagerWindow window;
+
+        static new void Repaint()
+        {
+
+            if (!window)
+                return;
+
+            if (view == mainView)
+                window.ReloadInstances();
+
+            ((EditorWindow)window).Repaint();
+
+        }
 
         void OnFocus()
         {
-            ReloadInstances();
             view.OnFocus();
             Repaint();
         }
@@ -191,14 +203,22 @@ namespace InstanceManager.Editor
             view.OnEnable();
             Repaint();
 
+            InstanceUtility.onInstancesChanged -= Repaint;
+            InstanceUtility.onInstancesChanged += Repaint;
+
         }
 
         void OnDisable()
         {
+
             view.OnDisable();
+
             if (InstanceManager.isPrimaryInstance)
                 PlayerPrefs.SetString("InstanceManagerWindow.SelectedInstance", instance?.id ?? null);
+
+            InstanceUtility.onInstancesChanged -= Repaint;
             window = null;
+
         }
 
         void OnGUI()
@@ -236,12 +256,17 @@ namespace InstanceManager.Editor
 
         public abstract class View
         {
+
             public virtual void OnGUI() { }
             public virtual void OnFocus() { }
             public virtual void OnEnable() { }
             public virtual void OnDisable() { }
             public virtual Vector2? minSize { get; }
             public Rect position => window.position;
+
+            public void Repaint() =>
+                InstanceManagerWindow.Repaint();
+
         }
 
         static void SetView(View view)

@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using UnityEditor;
 
 namespace InstanceManager.Utility
 {
@@ -22,11 +23,12 @@ namespace InstanceManager.Utility
             "ArtifactDB",
             "SourceAssetDB",
             "\\Bee",
+            ".instance",
             ".instance-events"
         };
 
         /// <summary>Creates a new secondary instance.</summary>
-        public static Task Create(string projectPath, string targetPath, Action onComplete = null, bool hideProgress = false) =>
+        public static Task Create(string projectPath, string targetPath, Action onComplete = null, Action afterCreateFolder = null, bool hideProgress = false) =>
            ProgressUtility.RunTask(
                displayName: "Creating instance",
                onComplete: (t) => onComplete?.Invoke(),
@@ -37,6 +39,9 @@ namespace InstanceManager.Utility
                    if (Directory.Exists(targetPath))
                        Directory.Delete(targetPath, true);
                    Directory.CreateDirectory(targetPath);
+
+                   if (afterCreateFolder != null)
+                       EditorApplication.delayCall += afterCreateFolder.Invoke;
 
                    await Task.WhenAll(GenerateTasks().ToArray());
 

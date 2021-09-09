@@ -1,10 +1,9 @@
+using InstanceManager.Utility;
 using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using InstanceManager.Editor;
-using InstanceManager.Utility;
 using UnityEditor;
 using UnityEngine;
 
@@ -167,8 +166,8 @@ namespace InstanceManager.Models
             InstanceUtility.Save(this);
 
         /// <summary>Removes the instance from disk.</summary>
-        public void Remove(Action onComplete = null) =>
-            InstanceUtility.Remove(this, onComplete);
+        public void Remove() =>
+            InstanceUtility.Remove(this);
 
         /// <summary>Refreshes this <see cref="UnityInstance"/>.</summary>
         public void Refresh() =>
@@ -287,16 +286,8 @@ namespace InstanceManager.Models
 
         void OnClosed()
         {
-
             SymLinkUtility.DeleteHubEntry(path);
-
             Save();
-            if (InstanceManagerWindow.window)
-            {
-                InstanceManagerWindow.window.Repaint();
-                EditorApplication.QueuePlayerLoopUpdate();
-            }
-
         }
 
         void InstanceProcess_Exited(object sender, EventArgs e) =>
