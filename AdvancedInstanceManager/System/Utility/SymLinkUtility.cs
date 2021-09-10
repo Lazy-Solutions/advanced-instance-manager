@@ -24,7 +24,8 @@ namespace InstanceManager.Utility
             "SourceAssetDB",
             "\\Bee",
             ".instance",
-            ".instance-events"
+            ".instance-events",
+            "EditorSnapSettings.asset",
         };
 
         /// <summary>Creates a new secondary instance.</summary>
