@@ -15,8 +15,6 @@ namespace InstanceManager
     {
 
         //TODO: Fix fonts (linux also has this issue)
-        //TODO: Restarting linux vm (or perhaps just restarting unity), causes instances to not be recognized (does primary id change?)
-        //TODO: Instance manager window opens on its own sometimes (fix applied, so is hopefully working)
 
         /// <summary>The secondary instances that have been to this project.</summary>
         public static IEnumerable<UnityInstance> instances => InstanceUtility.Enumerate();
