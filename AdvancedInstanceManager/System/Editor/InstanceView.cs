@@ -1,6 +1,6 @@
-﻿using InstanceManager.Utility;
-using System;
+﻿using System;
 using System.Linq;
+using InstanceManager.Utility;
 using UnityEditor;
 using UnityEngine;
 
@@ -10,8 +10,7 @@ namespace InstanceManager.Editor
     public partial class InstanceManagerWindow
     {
 
-        /// <summary>The instance view, for changing instance options.</summary>
-        public class InstanceView : View
+        class InstanceView : View
         {
 
             string[] layouts;
@@ -27,10 +26,8 @@ namespace InstanceManager.Editor
 
             Color scenesSeparator = new Color32(100, 100, 100, 32);
 
-            public override void OnEnable()
-            {
+            public override void OnEnable() =>
                 RefreshLayouts();
-            }
 
             public override void OnFocus()
             {

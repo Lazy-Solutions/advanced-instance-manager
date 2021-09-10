@@ -1,8 +1,8 @@
-﻿using InstanceManager.Models;
-using InstanceManager.Utility;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using InstanceManager.Models;
+using InstanceManager.Utility;
 using UnityEditor;
 using UnityEngine;
 
@@ -12,8 +12,7 @@ namespace InstanceManager.Editor
     public partial class InstanceManagerWindow
     {
 
-        /// <summary>The main view, listing the instances.</summary>
-        public class MainView : View
+        class MainView : View
         {
 
             public override Vector2? minSize => new Vector2(450, 350);

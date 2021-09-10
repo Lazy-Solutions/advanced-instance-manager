@@ -14,8 +14,6 @@ namespace InstanceManager
     public static class InstanceManager
     {
 
-        //TODO: Fix fonts (linux also has this issue)
-
         /// <summary>The secondary instances that have been to this project.</summary>
         public static IEnumerable<UnityInstance> instances => InstanceUtility.Enumerate();
 

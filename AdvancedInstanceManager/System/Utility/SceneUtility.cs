@@ -7,6 +7,7 @@ namespace InstanceManager
     static class SceneUtility
     {
 
+        /// <summary>Open the specified scenes.</summary>
         public static void OpenScenes(params string[] paths)
         {
 
@@ -21,6 +22,7 @@ namespace InstanceManager
 
         }
 
+        /// <summary>Reloads the currently open scenes.</summary>
         public static void ReloadScenes()
         {
             if (EditorSceneManager.GetSceneManagerSetup().Length > 0)

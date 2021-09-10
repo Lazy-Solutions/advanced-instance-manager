@@ -11,6 +11,7 @@ namespace InstanceManager.Editor
     public partial class InstanceManagerWindow : EditorWindow
     {
 
+        /// <summary>Opens the <see cref="InstanceManagerWindow"/>.</summary>
         [MenuItem("Tools/Lazy/Instance Manager")]
         public static void Open()
         {
@@ -254,7 +255,7 @@ namespace InstanceManager.Editor
         static View instanceView { get; } = new InstanceView();
         //static View settingsView { get; } = new SettingsView();
 
-        public abstract class View
+        abstract class View
         {
 
             public virtual void OnGUI() { }

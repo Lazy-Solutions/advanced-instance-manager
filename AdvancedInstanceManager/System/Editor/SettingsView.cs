@@ -8,7 +8,7 @@ namespace InstanceManager.Editor
     {
 
         /// <summary>This class is unused! It it kept here in case we need plugin settings in the future.</summary>
-        internal class SettingsView : View
+        class SettingsView : View
         {
 
             //string instancesPath;

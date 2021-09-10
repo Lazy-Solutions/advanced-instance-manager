@@ -4,6 +4,7 @@ using UnityEditor.Callbacks;
 namespace InstanceManager.Utility
 {
 
+    /// <summary>Manages open scripts in primary editor, if selected.</summary>
     static class ScriptAssetOpenUtility
     {
 

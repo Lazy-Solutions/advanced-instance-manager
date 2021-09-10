@@ -47,6 +47,7 @@ namespace InstanceManager.Utility
         public static Layout Find(string name) =>
             availableLayouts.FirstOrDefault(l => l.name == name);
 
+        /// <summary>Gets the current layout.</summary>
         public static Layout? GetCurrent()
         {
             if (GetLastLayoutName() is string str)
@@ -80,6 +81,7 @@ namespace InstanceManager.Utility
 
         }
 
+        /// <summary>Represents a window layout.</summary>
         public struct Layout
         {
 

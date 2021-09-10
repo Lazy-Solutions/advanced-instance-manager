@@ -2,7 +2,7 @@
 {
 
     /// <summary>Contains functions for working with strings.</summary>
-    internal static class StringUtility
+    static class StringUtility
     {
 
         /// <summary>Adds quotes around the string, where needed.</summary>

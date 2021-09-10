@@ -1,9 +1,9 @@
-using InstanceManager.Utility;
 using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using InstanceManager.Utility;
 using UnityEditor;
 using UnityEngine;
 
@@ -27,7 +27,7 @@ namespace InstanceManager.Models
 
         #region ISerializationCallbackReceiver
 
-        public void OnBeforeSerialize()
+        void ISerializationCallbackReceiver.OnBeforeSerialize()
         {
 
             //Save instance process id
@@ -41,7 +41,7 @@ namespace InstanceManager.Models
 
         }
 
-        public void OnAfterDeserialize()
+        void ISerializationCallbackReceiver.OnAfterDeserialize()
         {
 
             //Find instance process
