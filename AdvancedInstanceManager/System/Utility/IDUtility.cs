@@ -4,7 +4,7 @@ namespace InstanceManager.Utility
 {
 
     /// <summary>A utility for generating ids.</summary>
-    public static class IDUtility
+    static class IDUtility
     {
 
         /// <summary>Generates an id.</summary>

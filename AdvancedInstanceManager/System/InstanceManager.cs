@@ -21,9 +21,6 @@ namespace InstanceManager
         public static UnityInstance instance { get; } =
             InstanceUtility.LocalInstance();
 
-        /// <summary>Occurs during startup if current instance is secondary.</summary>
-        public static event Action onSecondInstanceStarted;
-
         /// <summary>Gets if the current instance is the primary instance.</summary>
         public static bool isPrimaryInstance => instance == null;
 
@@ -38,6 +35,9 @@ namespace InstanceManager
             : instance?.id;
 
         #region Events
+
+        /// <summary>Occurs during startup if current instance is secondary.</summary>
+        public static event Action OnSecondInstanceStarted;
 
         /// <summary>Occurs when primary instance is paused.</summary>
         public static event Action OnPrimaryPause;
@@ -168,7 +168,7 @@ namespace InstanceManager
                     WindowUtility.StopTaskbarFromFlashing();
             };
 #endif
-            onSecondInstanceStarted?.Invoke();
+            OnSecondInstanceStarted?.Invoke();
 
         }
 
