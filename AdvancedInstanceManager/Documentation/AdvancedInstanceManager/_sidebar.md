@@ -9,10 +9,10 @@ Core:\
 [UnityInstance](UnityInstance)
 
 Utility:\
-[InstanceUtility](InstanceUtility)\
 [ActionUtility](ActionUtility)\
 [CommandUtility](CommandUtility)\
 [CrossProcessEventUtility](CrossProcessEventUtility)\
 [GUIExt](GUIExt)\
+[InstanceUtility](InstanceUtility)\
 [ProgressUtility](ProgressUtility)\
 [WindowLayoutUtility](WindowLayoutUtility)
