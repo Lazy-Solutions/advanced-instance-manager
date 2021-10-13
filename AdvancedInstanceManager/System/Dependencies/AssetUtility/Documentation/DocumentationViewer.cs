@@ -1,5 +1,4 @@
-﻿#pragma warning disable IDE0052 // Remove unread private members
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -9,12 +8,27 @@ using UnityEngine;
 namespace AssetUtility.Documentation
 {
 
+    class MyAllPostprocessor : AssetPostprocessor
+    {
+        static void OnPostprocessAllAssets(string[] importedAssets, string[] deletedAssets, string[] movedAssets, string[] movedFromAssetPaths)
+        {
+            foreach (var window in Resources.FindObjectsOfTypeAll<DocumentationViewer>())
+                window.Reload();
+        }
+    }
+
     /// <summary>Base class for documentation viewers.</summary>
     abstract partial class DocumentationViewer : EditorWindow
     {
 
         GUISkin lightSkin;
         GUISkin darkSkin;
+
+        public void Reload()
+        {
+            OnDisable();
+            OnEnable();
+        }
 
         /// <summary>Opens the viewer, with the specified title.</summary>
         protected static void Open<T>(string title = "Documentation") where T : DocumentationViewer
@@ -42,11 +56,17 @@ namespace AssetUtility.Documentation
 
         string path;
 
+        string SavedPath
+        {
+            get => PlayerPrefs.GetString("AssetUtility:" + id + ".SelectedFile");
+            set => PlayerPrefs.SetString("AssetUtility:" + id + ".SelectedFile", value);
+        }
+
         void OnEnable()
         {
 
             sidebar = "";
-            file = "";
+            file = SavedPath;
             path = "";
 
             var assetRef = AssetDatabase.FindAssets("t:" + nameof(DocumentationRef)).Select(id => AssetDatabase.LoadAssetAtPath<DocumentationRef>(AssetDatabase.GUIDToAssetPath(id))).FirstOrDefault(r => r.id == id);
@@ -74,6 +94,9 @@ namespace AssetUtility.Documentation
             Events.registeredPackages -= Events_registeredPackages;
 #endif
             RegisterhyperLinkEvent(register: false);
+            sidebarViewer = null;
+            mainViewer = null;
+            SavedPath = file;
         }
 
 #if !UNITY_2019
@@ -311,16 +334,20 @@ namespace AssetUtility.Documentation
             if (!scroll.ContainsKey(file))
                 scroll.Add(file, Vector2.zero);
 
-            var asset = AssetDatabase.LoadAssetAtPath<TextAsset>(file);
-            if (!asset)
-                return;
-
             if (viewer == null)
+            {
+
+                var asset = AssetDatabase.LoadAssetAtPath<TextAsset>(file);
+                if (!asset)
+                    return;
+
                 viewer = new MG.MDV.MarkdownViewer(
                     skin: MG.MDV.Preferences.DarkSkin ? darkSkin : lightSkin,
                     file,
                     content: ProcessDocument(asset, isSidebar))
                 { drawToolbar = false };
+
+            }
 
             const float sidebarWidth = 250;
             const float margin = 12;
@@ -343,6 +370,7 @@ namespace AssetUtility.Documentation
                 return ZeroWidthSpace + @"\" + Environment.NewLine + "[Home](Home)" + Environment.NewLine + asset.text;
             else //Add name of current file as header
                 return (asset.name.EndsWith("Home") ? ZeroWidthSpace.ToString() : "# " + ObjectNames.NicifyVariableName(asset.name)) + Environment.NewLine + Environment.NewLine + asset.text;
+            //return ZeroWidthSpace + Environment.NewLine + asset.text;
         }
 
 #endif

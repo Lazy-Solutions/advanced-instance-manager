@@ -19,6 +19,8 @@ namespace InstanceManager.Utility
         /// <param name="description">The description for the progress item.</param>
         /// <param name="minDisplayTime">The minimum display time of the progress bar, makes sure that the progress is displayed and readable, instead of just flickering.</param>
         /// <param name="canRun">Prevents the task from running and does not create a progress item if false.</param>
+        /// <param name="hideError">Prevents the error from getting logged.</param>
+        /// <param name="hideProgress">Prevents progress from being shown.</param>
         public static async Task RunTask(string displayName, Task task, Action<Task> onComplete = null, string description = null, int minDisplayTime = 250, bool canRun = true, bool hideProgress = false, bool hideError = false)
         {
 

@@ -1,7 +1,18 @@
-## InstanceManagerWindow
+```csharp
+InstanceManager.Editor.InstanceManagerWindow
+```
+
+
+
+
 The instance manager window.
+
 
 ### Methods:
 
->##### Open()
+>##### void Open()
+>
+>
+>
 >Opens the InstanceManagerWindow.
+>

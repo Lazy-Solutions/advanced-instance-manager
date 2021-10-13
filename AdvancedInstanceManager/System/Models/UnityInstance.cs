@@ -15,9 +15,13 @@ namespace InstanceManager.Models
     public class UnityInstance : ISerializationCallbackReceiver
     {
 
+        /// <summary>Create a new instance of <see cref="UnityInstance"/>.</summary>
         public UnityInstance()
         { }
 
+        /// <summary>Create a new instance of <see cref="UnityInstance"/>.</summary>
+        /// <param name="id">The id of this <see cref="UnityInstance"/>.</param>
+        /// <param name="primaryID">The id of the primary instance that this <see cref="UnityInstance"/> is associated with.</param>
         public UnityInstance(string id, string primaryID)
         {
             m_ID = id;
@@ -232,6 +236,7 @@ namespace InstanceManager.Models
             Close(null);
 
         /// <summary>Closes this instance.</summary>
+        /// <param name="onClosed">Callback when instance is fully closed, since closing happens async.</param>
         public void Close(Action onClosed = null)
         {
 
