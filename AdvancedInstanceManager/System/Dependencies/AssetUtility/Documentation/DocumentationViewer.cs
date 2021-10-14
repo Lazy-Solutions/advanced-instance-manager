@@ -413,17 +413,18 @@ namespace AssetUtility.Documentation
             var text = asset.text;
 
             //Fix images
-            using (var reader = new StringReader(text))
-            {
-                while (reader.ReadLine() is string line)
+            if (path.Contains("Packages/"))
+                using (var reader = new StringReader(text))
                 {
-                    if (line.StartsWith("![](") && !line.StartsWith("![](http"))
+                    while (reader.ReadLine() is string line)
                     {
-                        var newLine = "![](" + InstanceManager.Utility.Paths.project + "/" + path + "/" + line.Substring("![](".Length);
-                        text = text.Replace(line, newLine);
+                        if (line.StartsWith("![](") && !line.StartsWith("![](http"))
+                        {
+                            var newLine = "![](" + InstanceManager.Utility.Paths.project + "/" + path + "/" + line.Substring("![](".Length);
+                            text = text.Replace(line, newLine);
+                        }
                     }
                 }
-            }
 
             if (isSidebar) //Add home and some spacing
                 return ZeroWidthSpace + @"\" + Environment.NewLine + "[Home](Home)" + Environment.NewLine + text;
