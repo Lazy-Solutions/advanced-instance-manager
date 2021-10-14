@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using InstanceManager.Utility;
 using UnityEditor;
 using UnityEngine;
 
@@ -342,7 +340,7 @@ namespace AssetUtility.Documentation
 
         const char ZeroWidthSpace = '​';
 
-        readonly Dictionary<string, Vector2> scroll = new Dictionary<string, Vector2>();
+        readonly System.Collections.Generic.Dictionary<string, Vector2> scroll = new System.Collections.Generic.Dictionary<string, Vector2>();
         void ViewFile(string file, ref MG.MDV.MarkdownViewer viewer, bool isSidebar)
         {
 
@@ -392,7 +390,7 @@ namespace AssetUtility.Documentation
                 {
                     if (line.StartsWith("![](") && !line.StartsWith("![](http"))
                     {
-                        var newLine = "![](" + Paths.project + "/" + path + "/" + line.Substring("![](".Length);
+                        var newLine = "![](" + InstanceManager.Utility.Paths.project + "/" + path + "/" + line.Substring("![](".Length);
                         text = text.Replace(line, newLine);
                     }
                 }
