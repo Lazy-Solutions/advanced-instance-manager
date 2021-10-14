@@ -34,7 +34,7 @@ WindowLayoutUtility.md
 echo Files copied to \temp
 echo Converting to pdf
 
-pandoc -s ^
+pandoc -V geometry:margin=1in -V colorlinks=true -V linkcolor=blue -s ^
 temp\home.md ^
 temp\quickstart.md ^
 temp\InstanceManagerWindowGuide.md ^
