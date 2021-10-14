@@ -98,9 +98,6 @@ namespace AssetUtility.Documentation
 
                 key = key.Replace("`1[", "{").Replace("]", "}");
 
-                if (member.Name == "RunTask")
-                { }
-
             }
 
             return key;
