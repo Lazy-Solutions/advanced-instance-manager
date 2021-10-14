@@ -102,8 +102,10 @@ namespace AssetUtility.Documentation
             Events.registeredPackages -= Events_registeredPackages;
 #endif
             RegisterhyperLinkEvent(register: false);
+#if UNITY_MARKDOWN_VIEWER
             sidebarViewer = null;
             mainViewer = null;
+#endif
             SavedPath = file;
             //VerticalScroll = scroll[file].y;
         }
