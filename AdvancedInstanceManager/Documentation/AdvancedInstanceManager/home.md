@@ -16,7 +16,8 @@ Want to get into contact with us? Report issues?\
 ##### API:
 Core:\
 [InstanceManager](InstanceManager) - The core of the API\
-[UnityInstance](UnityInstance) - The model for secondary instances
+[UnityInstance](UnityInstance) - The model for secondary instances\
+[Layout](Layout) - The model for window layouts
 
 Utility:\
 [ActionUtility](ActionUtility) - Provides functions for running tasks\

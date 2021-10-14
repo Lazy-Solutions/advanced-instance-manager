@@ -6,7 +6,8 @@
 ###### API:
 Core:\
 [InstanceManager](InstanceManager)\
-[UnityInstance](UnityInstance)
+[UnityInstance](UnityInstance)\
+[Layout](Layout)
 
 Utility:\
 [ActionUtility](ActionUtility)\
