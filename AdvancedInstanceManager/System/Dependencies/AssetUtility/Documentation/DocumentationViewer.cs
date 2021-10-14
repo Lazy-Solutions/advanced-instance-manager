@@ -183,9 +183,9 @@ namespace AssetUtility.Documentation
             {
 
                 var removedAssemblies = deletedAssets.Where(a => AssetDatabase.IsValidFolder(a)).SelectMany(a => AssetDatabase.FindAssets("t:asmdef", new[] { a })).Concat(deletedAssets.Where(a => a.EndsWith(".asmdef"))).ToArray();
-                var isMarkdownViewerUninstalled = removedAssemblies.Any(a => a.EndsWith("Mischief.MDV.Editor.asmdef"));
+                var isSelfOrMarkdownViewerUninstalled = removedAssemblies.Any(a => a.EndsWith("Mischief.MDV.Editor.asmdef") || a.EndsWith("AdvancedInstanceManager.asmdef"));
 
-                if (isMarkdownViewerUninstalled)
+                if (isSelfOrMarkdownViewerUninstalled)
                     ScriptingDefineUtility.Unset("UNITY_MARKDOWN_VIEWER");
 
             }
