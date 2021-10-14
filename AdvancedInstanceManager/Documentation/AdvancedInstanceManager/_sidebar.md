@@ -1,7 +1,7 @@
 
 ###### Guides:
 [Quick Start](QuickStart)\
-[Instance Manager Window](Instance-Manager-Window)
+[Instance Manager Window](InstanceManagerWindowGuide)
 
 ###### API:
 Core:\

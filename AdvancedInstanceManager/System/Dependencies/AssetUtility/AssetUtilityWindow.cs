@@ -32,7 +32,7 @@ namespace AssetUtility
     internal class AssetUtilityWindow : EditorWindow
     {
 
-        [MenuItem("Tools/Asset Utility")]
+        //[MenuItem("Tools/Asset Utility")]
         static void Open()
         {
             var w = GetWindow<AssetUtilityWindow>();

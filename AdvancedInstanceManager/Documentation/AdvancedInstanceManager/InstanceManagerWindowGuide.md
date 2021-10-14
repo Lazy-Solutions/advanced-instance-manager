@@ -1,5 +1,7 @@
 The instance manager window is the primary way of setting up secondary instances.
 
+![](image/menu.png)
+
 ![](image/advanced-instance-manager.png)
 
 Instance list:\

@@ -11,7 +11,7 @@ Want to get into contact with us? Report issues?\
 
 ##### Guides:
 [Quick Start](QuickStart) - An introductory guide to using Advanced Instance Manager\
-[Instance Manager Window](Instance-Manager-Window) - A guide that describes how to use the instance manager window
+[Instance Manager Window](InstanceManagerWindowGuide) - A guide that describes how to use the instance manager window
 
 ##### API:
 Core:\
