@@ -125,9 +125,6 @@ namespace AssetUtility.Documentation
             if (string.IsNullOrEmpty(path))
                 return;
 
-            minSize = new Vector2(651, 436);
-            maxSize = new Vector2(4000, 4000);
-
             EnsureCorrectPath(ref file, homeFile);
             EnsureCorrectPath(ref sidebar, sidebarFile);
 
@@ -135,13 +132,31 @@ namespace AssetUtility.Documentation
                 UnityMarkdownViewer.Refresh();
 
             if (UnityMarkdownViewer.isInstalled ?? false)
+            {
+                SetNormalMinMaxSize();
                 OnView();
+            }
             else if (UnityMarkdownViewer.isRefreshing || UnityMarkdownViewer.isInstalling)
+            {
+                SetNormalMinMaxSize();
                 OnRefreshing();
+            }
             else if (UnityMarkdownViewer.error != null)
+            {
+                SetNormalMinMaxSize();
                 OnError();
+            }
             else
+            {
+                maxSize = minSize;
                 OnInstall();
+            }
+
+            void SetNormalMinMaxSize()
+            {
+                minSize = new Vector2(651, 436);
+                maxSize = new Vector2(4000, 4000);
+            }
 
         }
 
@@ -161,10 +176,24 @@ namespace AssetUtility.Documentation
 
         #region Installing markdown viewer
 
-        void OnInstall()
+        class OnUninstall : AssetPostprocessor
         {
 
-            maxSize = minSize;
+            static void OnPostprocessAllAssets(string[] _, string[] deletedAssets, string[] __, string[] ___)
+            {
+
+                var removedAssemblies = deletedAssets.Where(a => AssetDatabase.IsValidFolder(a)).SelectMany(a => AssetDatabase.FindAssets("t:asmdef", new[] { a })).Concat(deletedAssets.Where(a => a.EndsWith(".asmdef"))).ToArray();
+                var isMarkdownViewerUninstalled = removedAssemblies.Any(a => a.EndsWith("Mischief.MDV.Editor.asmdef"));
+
+                if (isMarkdownViewerUninstalled)
+                    ScriptingDefineUtility.Unset("UNITY_MARKDOWN_VIEWER");
+
+            }
+
+        }
+
+        void OnInstall()
+        {
 
             GUILayout.BeginArea(new Rect(0, 0, Screen.width, Screen.height));
             GUILayout.FlexibleSpace();
