@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using InstanceManager.Utility;
 using UnityEditor;
 using UnityEngine;
 
@@ -62,12 +63,19 @@ namespace AssetUtility.Documentation
             set => PlayerPrefs.SetString("AssetUtility:" + id + ".SelectedFile", value);
         }
 
+        //float VerticalScroll
+        //{
+        //    get => PlayerPrefs.GetFloat("AssetUtility:" + id + ".VerticalScroll");
+        //    set => PlayerPrefs.SetFloat("AssetUtility:" + id + ".VerticalScroll", value);
+        //}
+
         void OnEnable()
         {
 
             sidebar = "";
             file = SavedPath;
             path = "";
+            //scroll[file] = new Vector2(0, VerticalScroll);
 
             var assetRef = AssetDatabase.FindAssets("t:" + nameof(DocumentationRef)).Select(id => AssetDatabase.LoadAssetAtPath<DocumentationRef>(AssetDatabase.GUIDToAssetPath(id))).FirstOrDefault(r => r.id == id);
             if (!assetRef)
@@ -97,7 +105,9 @@ namespace AssetUtility.Documentation
             sidebarViewer = null;
             mainViewer = null;
             SavedPath = file;
+            //VerticalScroll = scroll[file].y;
         }
+
 
 #if !UNITY_2019
         void Events_registeredPackages(PackageRegistrationEventArgs e) =>
@@ -306,7 +316,10 @@ namespace AssetUtility.Documentation
 
 #if UNITY_MARKDOWN_VIEWER
             if ((sidebarViewer?.Update() ?? false) || (mainViewer?.Update() ?? false))
+            {
+                //scroll[file] = new Vector2(0, VerticalScroll);
                 Repaint();
+            }
 #endif
 
         }
@@ -364,13 +377,30 @@ namespace AssetUtility.Documentation
 
         }
 
+
         string ProcessDocument(TextAsset asset, bool isSidebar)
         {
+
+            var text = asset.text;
+
+            //Fix images
+            using (var reader = new StringReader(text))
+            {
+                while (reader.ReadLine() is string line)
+                {
+                    if (line.StartsWith("![](") && !line.StartsWith("![](http"))
+                    {
+                        var newLine = "![](" + Paths.project + "/" + path + "/" + line.Substring("![](".Length);
+                        text = text.Replace(line, newLine);
+                    }
+                }
+            }
+
             if (isSidebar) //Add home and some spacing
-                return ZeroWidthSpace + @"\" + Environment.NewLine + "[Home](Home)" + Environment.NewLine + asset.text;
+                return ZeroWidthSpace + @"\" + Environment.NewLine + "[Home](Home)" + Environment.NewLine + text;
             else //Add name of current file as header
-                return (asset.name.EndsWith("Home") ? ZeroWidthSpace.ToString() : "# " + ObjectNames.NicifyVariableName(asset.name)) + Environment.NewLine + Environment.NewLine + asset.text;
-            //return ZeroWidthSpace + Environment.NewLine + asset.text;
+                return (asset.name.EndsWith("Home") ? ZeroWidthSpace.ToString() : "# " + ObjectNames.NicifyVariableName(asset.name)) + Environment.NewLine + Environment.NewLine + text;
+
         }
 
 #endif
