@@ -1,10 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using InstanceManager.Models;
 using InstanceManager.Utility;
 using UnityEditor;
 using UnityEngine;
+using Debug = UnityEngine.Debug;
 
 namespace InstanceManager.Editor
 {
@@ -14,6 +16,11 @@ namespace InstanceManager.Editor
 
         class MainView : View
         {
+
+            public override void OnEnable() => EditorApplication.update += Update;
+            public override void OnDisable() => EditorApplication.update -= Update;
+
+            void Update() => UpdatePromo();
 
             public override Vector2? minSize => new Vector2(450, 350);
 
@@ -203,7 +210,9 @@ namespace InstanceManager.Editor
                 GUIExt.EndColorScope();
 
                 EditorGUILayout.BeginHorizontal(Style.margin);
+
                 GUILayout.FlexibleSpace();
+                var promoPos = GUILayoutUtility.GetLastRect();
 
                 //if (GUILayout.Button(Content.settings, GUILayout.Height(27)))
                 //    OpenSettings();
@@ -214,9 +223,74 @@ namespace InstanceManager.Editor
                     GUIUtility.ExitGUI();
                 }
 
+                DrawPromo(promoPos, GUILayoutUtility.GetLastRect().height);
+
                 EditorGUILayout.EndHorizontal();
 
             }
+
+            #region Promo
+
+            Texture2D promoBackground;
+            Texture2D[] promoSwaps;
+            int promoSwap;
+            const float promoSwapDelay = 4;
+            double lastPromoSwapDelayTime;
+
+            void UpdatePromo()
+            {
+
+                if (promoSwaps == null)
+                    return;
+
+                if (EditorApplication.timeSinceStartup - lastPromoSwapDelayTime > promoSwapDelay)
+                {
+                    lastPromoSwapDelayTime = EditorApplication.timeSinceStartup;
+                    promoSwap += 1;
+                    if (promoSwap > promoSwaps.GetUpperBound(0))
+                        promoSwap = 0;
+                    Repaint();
+                }
+
+            }
+
+            bool isMouseDownPromo;
+            void DrawPromo(Rect position, float height)
+            {
+
+                if (!promoBackground)
+                    promoBackground = Resources.Load<Texture2D>("InstanceManager/Promotion/background");
+
+                if (promoSwaps == null)
+                    promoSwaps = Resources.LoadAll<Texture2D>("InstanceManager/Promotion").Where(t => t.name.StartsWith("swap")).ToArray();
+
+                var r3 = new Rect(position);
+                r3.yMin -= 2;
+                r3.xMin -= 6;
+                r3.xMax -= 0;
+                r3.yMax += 0;
+                r3.width = promoBackground.width * 0.55f;
+                r3.height = promoBackground.height * 0.55f;
+                GUI.DrawTexture(r3, promoBackground, ScaleMode.StretchToFill);
+                GUI.DrawTexture(Rect.MinMaxRect(r3.width * 0.21f, r3.yMin, r3.xMax - (r3.width * 0.45f), r3.yMax), promoSwaps[promoSwap], ScaleMode.StretchToFill);
+
+                //Debug.Log(r3);
+
+                EditorGUIUtility.AddCursorRect(r3, MouseCursor.Link);
+
+                var isMouseOver = r3.Contains(Event.current.mousePosition);
+
+                if (Event.current.isMouse)
+                    if (!isMouseOver)
+                        isMouseDownPromo = false;
+                    else if (Event.current.type == EventType.MouseDown && Event.current.button == 0)
+                        isMouseDownPromo = true;
+                    else if (Event.current.type == EventType.MouseUp && Event.current.button == 0 && isMouseDownPromo)
+                        Application.OpenURL("https://assetstore.unity.com/packages/tools/utilities/advanced-scene-manager-174152");
+
+            }
+
+            #endregion Promo
 
         }
 
