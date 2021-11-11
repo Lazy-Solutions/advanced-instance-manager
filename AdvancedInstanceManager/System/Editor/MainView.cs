@@ -262,19 +262,15 @@ namespace InstanceManager.Editor
                     promoBackground = Resources.Load<Texture2D>("InstanceManager/Promotion/background");
 
                 if (promoSwaps == null)
-                    promoSwaps = Resources.LoadAll<Texture2D>("InstanceManager/Promotion").Where(t => t.name.StartsWith("swap")).ToArray();
+                    promoSwaps = Resources.LoadAll<Texture2D>("InstanceManager/Promotion/swap");
 
                 var r3 = new Rect(position);
-                r3.yMin -= 2;
+                r3.yMin -= 6;
                 r3.xMin -= 6;
-                r3.xMax -= 0;
-                r3.yMax += 0;
-                r3.width = promoBackground.width * 0.55f;
-                r3.height = promoBackground.height * 0.55f;
-                GUI.DrawTexture(r3, promoBackground, ScaleMode.StretchToFill);
-                GUI.DrawTexture(Rect.MinMaxRect(r3.width * 0.21f, r3.yMin, r3.xMax - (r3.width * 0.45f), r3.yMax), promoSwaps[promoSwap], ScaleMode.StretchToFill);
-
-                //Debug.Log(r3);
+                r3.width = promoBackground.width;
+                r3.height = promoBackground.height - 22;
+                GUI.DrawTexture(r3, promoBackground);
+                GUI.DrawTexture(r3, promoSwaps[promoSwap]);
 
                 EditorGUIUtility.AddCursorRect(r3, MouseCursor.Link);
 
