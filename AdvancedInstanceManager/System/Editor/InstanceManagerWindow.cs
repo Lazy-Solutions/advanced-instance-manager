@@ -47,7 +47,7 @@ namespace InstanceManager.Editor
             {
 
                 if (margin is null) margin = new GUIStyle() { margin = new RectOffset(12, 12, 12, 12) };
-                if (createButton is null) createButton = new GUIStyle(GUI.skin.button) { padding = new RectOffset(12, 12, 6, 6) };
+                if (createButton is null) createButton = new GUIStyle(GUI.skin.button) { margin = new RectOffset(0, 0, 8, 0), padding = new RectOffset(12, 12, 6, 6) };
                 if (row is null) row = new GUIStyle(EditorStyles.toolbar) { padding = new RectOffset(12, 12, 12, 6), fixedHeight = 42 };
                 if (noItemsText is null) noItemsText = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleCenter, normal = new GUIStyleState() { textColor = new Color(1, 1, 1, 0.75f) } };
                 if (removeButton is null) removeButton = new GUIStyle(GUI.skin.button) { margin = new RectOffset(12, 0, 0, 0) };
@@ -258,10 +258,18 @@ namespace InstanceManager.Editor
         abstract class View
         {
 
-            public virtual void OnGUI() { }
-            public virtual void OnFocus() { }
-            public virtual void OnEnable() { }
-            public virtual void OnDisable() { }
+            public virtual void OnGUI()
+            {
+            }
+            public virtual void OnFocus()
+            {
+            }
+            public virtual void OnEnable()
+            {
+            }
+            public virtual void OnDisable()
+            {
+            }
             public virtual Vector2? minSize { get; }
             public Rect position => window.position;
 
@@ -299,7 +307,7 @@ namespace InstanceManager.Editor
 
         }
 
-        #endregion
+        #endregion View
         #region Check resize
 
         internal bool hasResized { get; private set; }
@@ -315,7 +323,7 @@ namespace InstanceManager.Editor
         protected void EndCheckResize() =>
             prevPos = position;
 
-        #endregion
+        #endregion Check resize
 
     }
 

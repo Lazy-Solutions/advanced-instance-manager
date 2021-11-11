@@ -196,6 +196,7 @@ namespace InstanceManager.Editor
 
             }
 
+            const float footerHeight = 42;
             void DrawFooter()
             {
 
@@ -209,21 +210,20 @@ namespace InstanceManager.Editor
                 GUI.DrawTexture(r, EditorGUIUtility.whiteTexture);
                 GUIExt.EndColorScope();
 
-                EditorGUILayout.BeginHorizontal(Style.margin);
+                EditorGUILayout.BeginHorizontal(Style.margin, GUILayout.Height(footerHeight));
 
                 GUILayout.FlexibleSpace();
-                var promoPos = GUILayoutUtility.GetLastRect();
 
-                //if (GUILayout.Button(Content.settings, GUILayout.Height(27)))
-                //    OpenSettings();
+                var promoPos = GUILayoutUtility.GetLastRect();
+                promoPos.height = footerHeight;
+
+                DrawPromo(promoPos);
 
                 if (GUILayout.Button(Content.createNewInstance, Style.createButton))
                 {
                     InstanceUtility.Create();
                     GUIUtility.ExitGUI();
                 }
-
-                DrawPromo(promoPos, GUILayoutUtility.GetLastRect().height);
 
                 EditorGUILayout.EndHorizontal();
 
@@ -255,7 +255,7 @@ namespace InstanceManager.Editor
             }
 
             bool isMouseDownPromo;
-            void DrawPromo(Rect position, float height)
+            void DrawPromo(Rect position)
             {
 
                 if (!promoBackground)
@@ -265,10 +265,10 @@ namespace InstanceManager.Editor
                     promoSwaps = Resources.LoadAll<Texture2D>("InstanceManager/Promotion/swap");
 
                 var r3 = new Rect(position);
-                r3.yMin -= 6;
+                r3.yMin += (position.height / 2) - (promoBackground.height / 2);
                 r3.xMin -= 6;
                 r3.width = promoBackground.width;
-                r3.height = promoBackground.height - 22;
+                r3.height = promoBackground.height;
                 GUI.DrawTexture(r3, promoBackground);
                 GUI.DrawTexture(r3, promoSwaps[promoSwap]);
 
