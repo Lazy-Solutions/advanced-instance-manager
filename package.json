@@ -1,6 +1,6 @@
 {
   "name": "com.lazy.advanced-instance-manager",
-  "version": "0.5.0",
+  "version": "1.1.0",
   "displayName": "Advanced Instance Manager",
   "description": "This package provides easy editor instance management, making it easier to test multiplayer games in Unity",
   "unity": "2018.1",
