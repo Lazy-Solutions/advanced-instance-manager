@@ -87,7 +87,7 @@ namespace AssetUtility.Documentation
             lightSkin = AssetDatabase.LoadAssetAtPath<GUISkin>($"Packages/{UnityMarkdownViewer.packageName}/Editor/Skin/MarkdownViewerSkin.guiskin");
             darkSkin = AssetDatabase.LoadAssetAtPath<GUISkin>($"Packages/{UnityMarkdownViewer.packageName}/Editor/Skin/MarkdownSkinQs.guiskin");
 #if !UNITY_2019
-            Events.registeredPackages += Events_registeredPackages;
+            UnityEditor.PackageManager.Events.registeredPackages += Events_registeredPackages;
 #endif
             UnityMarkdownViewer.Refresh();
             RegisterhyperLinkEvent();
@@ -97,7 +97,7 @@ namespace AssetUtility.Documentation
         void OnDisable()
         {
 #if !UNITY_2019
-            Events.registeredPackages -= Events_registeredPackages;
+            UnityEditor.PackageManager.Events.registeredPackages -= Events_registeredPackages;
 #endif
             RegisterhyperLinkEvent(register: false);
 #if UNITY_MARKDOWN_VIEWER
@@ -110,7 +110,7 @@ namespace AssetUtility.Documentation
 
 
 #if !UNITY_2019
-        void Events_registeredPackages(PackageRegistrationEventArgs e) =>
+        void Events_registeredPackages(UnityEditor.PackageManager.PackageRegistrationEventArgs e) =>
             Repaint();
 #endif
 
@@ -165,12 +165,18 @@ namespace AssetUtility.Documentation
 
             var docPath = this.path;
 
-            if (docPath.Contains("/advanced-instance-manager")) docPath = docPath.Replace("/advanced-instance-manager", "/com.lazy.advanced-instance-manager");
-            if (path.Contains("/advanced-instance-manager")) path = path.Replace("/advanced-instance-manager", "/com.lazy.advanced-instance-manager");
-            if (path is null) path = nullPath;
-            if (!path.StartsWith(docPath)) path = docPath + "/" + path.TrimStart('/');
-            if (!path.EndsWith(".md")) path += ".md";
-            if (path.EndsWith("/.md")) path = path.Replace("/.md", "/" + nullPath);
+            if (docPath.Contains("/advanced-instance-manager"))
+                docPath = docPath.Replace("/advanced-instance-manager", "/com.lazy.advanced-instance-manager");
+            if (path.Contains("/advanced-instance-manager"))
+                path = path.Replace("/advanced-instance-manager", "/com.lazy.advanced-instance-manager");
+            if (path is null)
+                path = nullPath;
+            if (!path.StartsWith(docPath))
+                path = docPath + "/" + path.TrimStart('/');
+            if (!path.EndsWith(".md"))
+                path += ".md";
+            if (path.EndsWith("/.md"))
+                path = path.Replace("/.md", "/" + nullPath);
 
         }
 
