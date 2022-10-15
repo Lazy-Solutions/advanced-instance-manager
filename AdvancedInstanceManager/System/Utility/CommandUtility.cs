@@ -49,7 +49,7 @@ namespace InstanceManager.Utility
             Task.Run(() =>
             {
 
-                using (var p = Process.Start(new ProcessStartInfo("/bin/bash", "-c \"" + command.Replace("\"", "\"\"") + "\"")
+                using (var p = Process.Start(new ProcessStartInfo("/bin/bash", "-c \"" + command.Replace("\\", "/") + "\"")
                 {
                     UseShellExecute = false,
                     RedirectStandardError = true,
